@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="傅里叶变换，可以将函数表示成三角函数的的积分(线性组合) 傅里叶变换基本公式：$$F(\omega)&#x3D;F(f(t))&#x3D;\int ^\infty_{-\infty}f(t)e^{-i\omega t}dt$$$$f(t)&#x3D;F^{-1}[F(\omega)]&#x3D;\frac{1}{2\pi}\int ^\infty_{-\infty}F(\omega e^{i\omega t})d\omega$$一般使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="傅里叶变换-numpy">
+<meta property="og:url" content="http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="傅里叶变换，可以将函数表示成三角函数的的积分(线性组合) 傅里叶变换基本公式：$$F(\omega)&#x3D;F(f(t))&#x3D;\int ^\infty_{-\infty}f(t)e^{-i\omega t}dt$$$$f(t)&#x3D;F^{-1}[F(\omega)]&#x3D;\frac{1}{2\pi}\int ^\infty_{-\infty}F(\omega e^{i\omega t})d\omega$$一般使用">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/cat.png">
+<meta property="article:published_time" content="2021-11-27T16:27:31.000Z">
+<meta property="article:modified_time" content="2021-11-27T16:50:11.708Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="傅里叶变换">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/cat.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>傅里叶变换-numpy</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/27/%E6%B4%AA%E6%B0%B4%E7%AE%97%E6%B3%95-python%E5%AE%9E%E7%8E%B0/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&text=傅里叶变换-numpy"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&is_video=false&description=傅里叶变换-numpy"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=傅里叶变换-numpy&body=Check out this article: http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&name=傅里叶变换-numpy&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&t=傅里叶变换-numpy"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        傅里叶变换-numpy
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-27T16:27:31.000Z" itemprop="datePublished">2021-11-28</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/python/" rel="tag">python</a>, <a class="tag-link-link" href="/tags/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2/" rel="tag">傅里叶变换</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>傅里叶变换，可以将函数表示成三角函数的的积分(线性组合)</p>
+<p>傅里叶变换基本公式：<br>$$F(\omega)=F(f(t))=\int ^\infty_{-\infty}f(t)e^{-i\omega t}dt$$<br>$$f(t)=F^{-1}[F(\omega)]=\frac{1}{2\pi}\int ^\infty_{-\infty}F(\omega e^{i\omega t})d\omega$$<br>一般使用计算机进行傅里叶变换，采集的是一个离散的信号，所以一般使用的是离散傅里叶变换，但是离散傅里叶变换，时间复杂度是O(N*N)，大多数时候使用快速傅里叶变换。</p>
+<p>离散傅里叶变换:<br>我们将采集的离散信号进行标号[0, …. , N-1], 离散信号记为m<br>$$F[m]=F(f)[m]=\sum ^N _{n=0} f[n]e^{\frac{-2\pi inm}{N}}$$<br>因为傅里叶变换就是使用一组正交函数基进行线性组合，通过转换到向量乘法，f为关于n的向量，$e^{\frac{-2\pi inm}{N}}$是关于$e^{\frac{-2\pi i}{N}}$的矩阵，同时这个矩阵是个对称阵，从这个对称阵中，我们还可以发现在以N为周期的离散傅里叶变换中，变换的结果也是对称的（这也是$e^{\frac{-2\pi i}{N}}$的一个良好性质，$e^{\frac{-2\pi iN}{N}}=1$）。</p>
+<p>使用numpy进行傅里叶变换，调用numpy.fft即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">img = plt.imread(&quot;cat01.jpg&quot;)</span><br><span class="line">f = np.fft.fft2(img)</span><br><span class="line">fshift = np.fft.fftshift(f)</span><br><span class="line">fo = np.fft.ifftshift(fshift)</span><br><span class="line">iff = np.fft.ifft2(f)</span><br><span class="line"># 低通滤波</span><br><span class="line">crow, ccol = int(img.shape[0] / 2), int(img.shape[1] / 2)</span><br><span class="line">mask = np.zeros((img.shape[0], img.shape[1]), np.uint8)</span><br><span class="line">mask[crow-40:crow+40, ccol-40:ccol+40] = 1</span><br><span class="line">mask_img = fshift * mask</span><br><span class="line">img_idf = np.fft.ifftshift(mask_img)</span><br><span class="line">lowpass_iff = np.fft.ifft2(img_idf)</span><br><span class="line"># 高通滤波</span><br><span class="line">crow, ccol = int(img.shape[0] / 2), int(img.shape[1] / 2)</span><br><span class="line">mask = np.ones((img.shape[0], img.shape[1]), np.uint8)</span><br><span class="line">mask[crow-40:crow+40, ccol-40:ccol+40] = 0</span><br><span class="line">mask_img = fshift * mask</span><br><span class="line">img_idf = np.fft.ifftshift(mask_img)</span><br><span class="line">highpass_iff = np.fft.ifft2(img_idf)</span><br><span class="line">plt.figure(figsize=(10, 8))</span><br><span class="line">plt.subplot(231)</span><br><span class="line">plt.imshow(img, cmap=&#x27;gray&#x27;)</span><br><span class="line">plt.title(&#x27;Origin Image&#x27;)</span><br><span class="line">plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(232)</span><br><span class="line">plt.imshow(20 * np.log(np.abs(fshift)),cmap=&#x27;gray&#x27;)</span><br><span class="line">plt.title(&#x27;Fourier Transform&#x27;)</span><br><span class="line">plt.subplot(234)</span><br><span class="line">plt.imshow(np.abs(iff),cmap=&#x27;gray&#x27;)</span><br><span class="line">plt.title(&#x27;ifft2&#x27;)</span><br><span class="line">plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(235)</span><br><span class="line">plt.imshow(np.abs(lowpass_iff),cmap=&#x27;gray&#x27;)</span><br><span class="line">plt.title(&#x27;low pass&#x27;)</span><br><span class="line">plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.subplot(236)</span><br><span class="line">plt.imshow(np.abs(highpass_iff),cmap=&#x27;gray&#x27;)</span><br><span class="line">plt.title(&#x27;high pass&#x27;)</span><br><span class="line">plt.axis(&#x27;off&#x27;)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><img src="/images/cat.png"></p>
+<p>可以从运行结果看到，进行一次傅里叶变换，为了更好的查看信号在频域上的分布，使用np.fft.fftshift函数进行整理，第2张图可以看到，结果是对称，也符合傅里叶变换之后的对称性。从第4张图可以看到，通过低通滤波，图片变得模糊了许多，这也就是低通滤波的作用。高通滤波则是可以更好的提取细节信息，如图5。</p>
+<p>当然对于最后两张图，我们很容易想到CNN的卷积操作，不同于这里我们对频谱进行排序，然后进行过滤，CNN直接使用一个conv算子进行计算，减少了傅里叶变换的工作。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&text=傅里叶变换-numpy"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&is_video=false&description=傅里叶变换-numpy"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=傅里叶变换-numpy&body=Check out this article: http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&title=傅里叶变换-numpy"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&name=傅里叶变换-numpy&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/&t=傅里叶变换-numpy"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
