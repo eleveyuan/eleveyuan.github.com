@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="最近实验的涉及到PSO算法(Particle Swarm Optimization)，pso属于进化算法(pso也属于群智算法)。由Kennedy和Eberhart提出，模拟鸟群觅食进行优化。基本核心是利用群体中的个体对信息的共享从而使整个群体的运动在问题求解空间中产生从无序到有序的演化过程，从而获得问题的最优解。 假设一个粒子$\vec x_i$属于D维空间的向量，群体进行搜索食物，粒子开始行动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PSO算法">
+<meta property="og:url" content="http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="最近实验的涉及到PSO算法(Particle Swarm Optimization)，pso属于进化算法(pso也属于群智算法)。由Kennedy和Eberhart提出，模拟鸟群觅食进行优化。基本核心是利用群体中的个体对信息的共享从而使整个群体的运动在问题求解空间中产生从无序到有序的演化过程，从而获得问题的最优解。 假设一个粒子$\vec x_i$属于D维空间的向量，群体进行搜索食物，粒子开始行动">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/pso.png">
+<meta property="article:published_time" content="2021-11-28T04:42:16.000Z">
+<meta property="article:modified_time" content="2021-11-28T04:47:09.233Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="进化算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/pso.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>PSO算法</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/11/28/BSO%E5%A4%B4%E8%84%91%E9%A3%8E%E6%9A%B4/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&text=PSO算法"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&is_video=false&description=PSO算法"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PSO算法&body=Check out this article: http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&name=PSO算法&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&t=PSO算法"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        PSO算法
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-28T04:42:16.000Z" itemprop="datePublished">2021-11-28</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>, <a class="tag-link-link" href="/tags/%E8%BF%9B%E5%8C%96%E7%AE%97%E6%B3%95/" rel="tag">进化算法</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>最近实验的涉及到PSO算法(Particle Swarm Optimization)，pso属于进化算法(pso也属于群智算法)。由Kennedy和Eberhart提出，模拟鸟群觅食进行优化。基本核心是利用群体中的个体对信息的共享从而使整个群体的运动在问题求解空间中产生从无序到有序的演化过程，从而获得问题的最优解。</p>
+<p>假设一个粒子$\vec x_i$属于D维空间的向量，群体进行搜索食物，粒子开始行动，以速度$\vec v_i$飞出，进行搜索，整个过程粒子对比先前搜索到的最优点$\vec pbest_i$，这个是粒子个体的搜索经验，放大到群体范围，粒子还可以参考全体粒子的最优值(全体的搜索经验，也就是粒子间的搜索协作和共享)$\vec gbest$</p>
+<p>粒子速度和位置的更新:</p>
+<p>$$\vec v_i = w \times \vec v_i + c_1 \times rand() \times (pbest_i - \vec x_i) + c_2 \times rand() \times (gbest - \vec x_i)$$</p>
+<p>$$\vec x_i = \vec x_i + \vec v_i$$</p>
+<p>算法过程：<br>1.随机初始化种群中粒子的位置x与速度v<br>for 搜索迭代循环：<br>for 粒子循环：<br>2. 更新粒子的位置x与速度v。<br>3. 通过约束函数f，进行计算当前位置的函数值fitness，<br>4. 如果当前粒子x找到的值，比前面已找到的值pbest小，则更新<br>5. 如果前面找到的值pbest小于全局最小值gbest，则更新<br>end for<br>end for</p>
+<p>使用PSO寻找函数的最小值：</p>
+<p>$$f(x) = \frac{sin \sqrt{x^2_1 +x^2_2}}{\sqrt{x^2_1 +x^2_1}} + e^{\frac{con 2 \pi x_1 +con 2 \pi x_2}{2}} -2.71289$$</p>
+<p><img src="/images/pso.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> mpl_toolkits.mplot3d  <span class="keyword">import</span> Axes3D</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> np.sin(np.sqrt(np.add.reduce(np.power(x, <span class="number">2</span>))))/np.sqrt(np.add.reduce(np.power(x, <span class="number">2</span>))) + \</span><br><span class="line">           np.exp(np.add.reduce(np.cos(<span class="number">2</span>*np.pi*x))/<span class="number">2</span>) - <span class="number">2.71289</span></span><br><span class="line"></span><br><span class="line">X = np.arange(-<span class="number">2</span>, <span class="number">2</span>, <span class="number">0.05</span>)</span><br><span class="line">Y = np.arange(-<span class="number">2</span>, <span class="number">2</span>, <span class="number">0.05</span>)</span><br><span class="line">X, Y = np.meshgrid(X, Y)</span><br><span class="line"></span><br><span class="line">Z = f(np.array([X, Y]))</span><br><span class="line"></span><br><span class="line">fig = plt.figure()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立体图</span></span><br><span class="line"><span class="comment"># ax = Axes3D(fig)</span></span><br><span class="line"><span class="comment"># plt.title(&quot;PSO&quot;)</span></span><br><span class="line"><span class="comment"># ax.plot_surface(X, Y, Z, rstride=1, cstride=1, color=&#x27;b&#x27;, )</span></span><br><span class="line"><span class="comment"># ax.set_xlabel(&#x27;x label&#x27;, color=&#x27;r&#x27;)</span></span><br><span class="line"><span class="comment"># ax.set_ylabel(&#x27;y label&#x27;, color=&#x27;g&#x27;)</span></span><br><span class="line"><span class="comment"># ax.set_zlabel(&#x27;z label&#x27;, color=&#x27;b&#x27;)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 等高线图</span></span><br><span class="line">cs = plt.contourf(X, Y, Z)</span><br><span class="line">fig.colorbar(cs)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p>通过PSO算法搜索上面函数的最小值以及搜索过程的动态展示。通过调整参数w会发现，w值越大，全局搜索能力更强，w值越小，全局搜索能力较弱。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np</span><br><span class="line">import matplotlib.pyplot as plt</span><br><span class="line">from mpl_toolkits.mplot3d  import Axes3D</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class PSO(object):</span><br><span class="line"></span><br><span class="line">    def __init__(self, func, n_partciles=30, dims=2, iters=200, w=0.9, lr=(0.5, 1.5), rangep=(-2, 2), rangev=(-0.5, 0.5)):</span><br><span class="line">        self.func = func</span><br><span class="line">        self.n_partciles = n_partciles  # 种群大小</span><br><span class="line">        self.dims = dims  # 粒子维度</span><br><span class="line">        self.iters = iters  # 迭代次数</span><br><span class="line">        self.w = w</span><br><span class="line">        self.lr = lr  # 个体粒子的搜索经验，全体的搜索经验</span><br><span class="line">        self.rangep = rangep  # 粒子搜索的限制范围</span><br><span class="line">        self.rangev = rangev  # 粒子速度的限制范围</span><br><span class="line"></span><br><span class="line">    def initSwarm(self):</span><br><span class="line">        # 初始化粒子位置与速度，计算初始化下的函数适应度</span><br><span class="line">        particles = np.zeros((self.n_partciles, self.dims))</span><br><span class="line">        v = np.zeros((self.n_partciles, self.dims))</span><br><span class="line">        fitness = np.zeros(self.n_partciles)</span><br><span class="line"></span><br><span class="line">        for i in range(self.n_partciles):</span><br><span class="line">            particles[i] = [(np.random.rand() - 0.5) * self.rangep[1] for i in range(self.dims)]</span><br><span class="line">            v[i] = [(np.random.rand() - 0.5) * self.rangep[1] for i in range(self.dims)]</span><br><span class="line">            fitness[i] = self.func(particles[i])</span><br><span class="line"></span><br><span class="line">        # 初始化pbest, gbest</span><br><span class="line">        gbest, gbestfitness = particles[fitness.argmin()].copy(), fitness.min()</span><br><span class="line">        pbest, pbestfitness = particles.copy(), fitness.copy()</span><br><span class="line"></span><br><span class="line">        return particles, v, fitness, gbest, gbestfitness, pbest, pbestfitness</span><br><span class="line"></span><br><span class="line">    def run(self):</span><br><span class="line">        particles, v, fitness, gbest, gbestfitness, pbest, pbestfitness = self.initSwarm()</span><br><span class="line">        # 迭代循环</span><br><span class="line">        result = np.zeros(self.iters)</span><br><span class="line">        fig = plt.figure()</span><br><span class="line">        plt.ion()</span><br><span class="line">        X = np.arange(-2, 2, 0.05)</span><br><span class="line">        Y = np.arange(-2, 2, 0.05)</span><br><span class="line">        X, Y = np.meshgrid(X, Y)</span><br><span class="line">        Z = f(np.array([X, Y]))</span><br><span class="line">        cs = plt.contourf(X, Y, Z)</span><br><span class="line">        fig.colorbar(cs)</span><br><span class="line">        for i in range(self.iters):</span><br><span class="line">            # 速度更新</span><br><span class="line">            for j in range(self.n_partciles):</span><br><span class="line">                v[j] = self.w * v[j] + self.lr[0] * np.random.rand() * (pbest[j] - particles[j]) \</span><br><span class="line">                       + self.lr[1] * np.random.rand() * (gbest - particles[j])</span><br><span class="line">            v[v &lt; self.rangev[0]] = self.rangev[0]</span><br><span class="line">            v[v &gt; self.rangev[1]] = self.rangev[1]</span><br><span class="line">            # 位置更新</span><br><span class="line">            for j in range(self.n_partciles):</span><br><span class="line">                particles[j] += v[j]</span><br><span class="line">            particles[particles &lt; self.rangep[0]] = self.rangep[0]</span><br><span class="line">            particles[particles &gt; self.rangep[1]] = self.rangep[1]</span><br><span class="line"></span><br><span class="line">            s = plt.scatter(particles[:, 0], particles[:, 1], c=&#x27;orange&#x27;)</span><br><span class="line">            plt.pause(0.4)</span><br><span class="line">            s.remove()</span><br><span class="line"></span><br><span class="line">            # 适应度更新</span><br><span class="line">            for j in range(self.n_partciles):</span><br><span class="line">                fitness[j] = self.func(particles[j])</span><br><span class="line"></span><br><span class="line">            for j in range(self.n_partciles):</span><br><span class="line">                if fitness[j] &lt; pbestfitness[j]:</span><br><span class="line">                    pbestfitness[j] = fitness[j]</span><br><span class="line">                    pbest[j] = particles[j].copy()</span><br><span class="line"></span><br><span class="line">            if pbestfitness.min() &lt; gbestfitness:</span><br><span class="line">                gbestfitness = pbestfitness.min()</span><br><span class="line">                gbest = particles[pbestfitness.argmin()].copy()</span><br><span class="line">            result[i] = gbestfitness</span><br><span class="line"></span><br><span class="line">        plt.ioff()</span><br><span class="line">        # 显示图形</span><br><span class="line">        plt.scatter(gbest[0], gbest[1], c=&#x27;white&#x27;)</span><br><span class="line">        plt.show()</span><br><span class="line">        return result</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def f(x):</span><br><span class="line">    return np.sin(np.sqrt(np.add.reduce(np.power(x, 2))))/np.sqrt(np.add.reduce(np.power(x, 2))) + \</span><br><span class="line">           np.exp(np.add.reduce(np.cos(2*np.pi*x))/2) - 2.71289</span><br><span class="line"></span><br><span class="line">pso = PSO(f)</span><br><span class="line">print(pso.run())</span><br></pre></td></tr></table></figure>
+<p>这段代码可以在本地运行查看算法运行粒子的移动。</p>
+<p>PSO算法的思想十分简洁，但是粒子有时候逃不脱经验的束缚，粒子会被群体最优值拉回来。从而得不到全局最优解，就像其他优化算法一样，例如最简单的梯度下降。当局部最优解很多时，很难寻到最优解。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Poli R, Kennedy J, Blackwell T. Particle swarm optimization[J]. Swarm intelligence, 2007, 1(1): 33-57.</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&text=PSO算法"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&is_video=false&description=PSO算法"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PSO算法&body=Check out this article: http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&title=PSO算法"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&name=PSO算法&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/PSO%E7%AE%97%E6%B3%95/&t=PSO算法"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

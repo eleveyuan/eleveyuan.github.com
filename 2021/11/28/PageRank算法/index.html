@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="看到许多图神经网络论文都会涉及到Rank算法，所以抽空来看看这个Rank经典算法PageRank，算法的发明人就是两位Google创始人，这个算法最初也是作为网页的排名算法。 PageRank算法是基于有向图的形式进行的，在其上定义一个随机游走模型(一阶马尔科夫链)，通过马尔科夫链的n步转移概率，整个有向图的概率转移会趋于稳定，达到收敛值。也就是我们在访问网页时，由一个网页到另一个网页的概率是一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PageRank算法">
+<meta property="og:url" content="http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="看到许多图神经网络论文都会涉及到Rank算法，所以抽空来看看这个Rank经典算法PageRank，算法的发明人就是两位Google创始人，这个算法最初也是作为网页的排名算法。 PageRank算法是基于有向图的形式进行的，在其上定义一个随机游走模型(一阶马尔科夫链)，通过马尔科夫链的n步转移概率，整个有向图的概率转移会趋于稳定，达到收敛值。也就是我们在访问网页时，由一个网页到另一个网页的概率是一个">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/graph.png">
+<meta property="article:published_time" content="2021-11-28T04:32:30.000Z">
+<meta property="article:modified_time" content="2021-11-28T04:40:50.942Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="马尔科夫链">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/graph.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>PageRank算法</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/11/28/PSO%E7%AE%97%E6%B3%95/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&text=PageRank算法"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&is_video=false&description=PageRank算法"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PageRank算法&body=Check out this article: http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&name=PageRank算法&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&t=PageRank算法"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#PageRank%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">PageRank算法描述</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">1.0.0.1.</span> <span class="toc-text"></span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        PageRank算法
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-28T04:32:30.000Z" itemprop="datePublished">2021-11-28</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>, <a class="tag-link-link" href="/tags/%E9%A9%AC%E5%B0%94%E7%A7%91%E5%A4%AB%E9%93%BE/" rel="tag">马尔科夫链</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>看到许多图神经网络论文都会涉及到Rank算法，所以抽空来看看这个Rank经典算法PageRank，算法的发明人就是两位Google创始人，这个算法最初也是作为网页的排名算法。</p>
+<p>PageRank算法是基于有向图的形式进行的，在其上定义一个随机游走模型(一阶马尔科夫链)，通过马尔科夫链的n步转移概率，整个有向图的概率转移会趋于稳定，达到收敛值。也就是我们在访问网页时，由一个网页到另一个网页的概率是一个定值，这样通过定值来判断网页的重要度。</p>
+<h1 id="PageRank算法描述"><a href="#PageRank算法描述" class="headerlink" title="PageRank算法描述"></a>PageRank算法描述</h1><p>将强连通且非周期性的有向图记作$G=(V, E)$，其中V和E分别表示节点和有向边的集合。转移概率矩阵$M=[m _{ij}] _{n*n}$，$m _{ij}= 1/k$(k为由j连出的k条边，i为其中之一)，也就是当前网页j跳转到网页i的概率。</p>
+<p>所以有上述定义，在进行状态转移时，假设时刻$t$的状态分布$R_t$，则在时刻$t+1$的状态分布为：$R_{t+1}=M R_t$。</p>
+<p>通过迭代得到时刻$t$的状态分布$R_t = M^t R_0$，并最终收敛，$lim_{t \rightarrow \infty}=R$，最终得到的R的各个分量为每个节点(网页)的最终PageRank值: $PR(v_i)=\sum_{v_j \in M(v_i)}\frac{PR(v_j)}{L(v_j)}$，其中$M(v_i)$为指向节点$v_i$的节点集合，$L(v_j)$为节点$v_j$连出的节点数</p>
+<p><img src="/images/graph.png"></p>
+<p>使用上述图以及python networkx包来计算pagerank值，很简单的掉包进行工具人操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">import networkx as nx</span><br><span class="line"></span><br><span class="line"># 创建有向图</span><br><span class="line">G = nx.DiGraph()</span><br><span class="line"></span><br><span class="line"># 有向图之间边的关系</span><br><span class="line">edges = [(&quot;A&quot;, &quot;B&quot;), (&quot;A&quot;, &quot;C&quot;), (&quot;A&quot;, &quot;D&quot;), (&quot;B&quot;, &quot;A&quot;), (&quot;B&quot;, &quot;D&quot;), (&quot;C&quot;, &quot;A&quot;), (&quot;D&quot;, &quot;B&quot;), (&quot;D&quot;, &quot;C&quot;)]</span><br><span class="line"></span><br><span class="line">for edge in edges:</span><br><span class="line"></span><br><span class="line">    G.add_edge(edge[0], edge[1])</span><br><span class="line"></span><br><span class="line">pagerank_list = nx.pagerank(G, alpha=1)</span><br><span class="line"></span><br><span class="line">print(&quot;pagerank 值是：&quot;, pagerank_list)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; pagerank 值是： &#123;&#x27;A&#x27;: 0.33333396911621094, &#x27;B&#x27;: 0.22222201029459634, &#x27;C&#x27;: 0.22222201029459634, &#x27;D&#x27;: 0.22222201029459634&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述的过程，因为图是强连通的，最终会收敛与平稳状态，当图不是强连通的，最终PR值将会变成0(reference2，等级泄露、等级沉默)。</p>
+<p>为了解决这个问题，PageRank算法定义了一个阻尼系数d(经验系数)。<br>$PR(v_i)=d(\sum_{v_j \in M(v_i)}\frac{PR(v_j)}{L(v_j)})+ \frac{1-d}{n}$</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">import networkx as nx</span><br><span class="line"></span><br><span class="line"># 创建有向图</span><br><span class="line">G = nx.DiGraph()</span><br><span class="line"></span><br><span class="line"># 有向图之间边的关系</span><br><span class="line">edges = [(&quot;A&quot;, &quot;B&quot;), (&quot;A&quot;, &quot;C&quot;), (&quot;A&quot;, &quot;D&quot;), (&quot;B&quot;, &quot;A&quot;), (&quot;B&quot;, &quot;D&quot;), (&quot;C&quot;, &quot;C&quot;), (&quot;D&quot;, &quot;B&quot;), (&quot;D&quot;, &quot;C&quot;)]</span><br><span class="line"></span><br><span class="line">for edge in edges:</span><br><span class="line"></span><br><span class="line">    G.add_edge(edge[0], edge[1])</span><br><span class="line"></span><br><span class="line">pagerank_list = nx.pagerank(G, alpha=1)</span><br><span class="line"></span><br><span class="line">print(&quot;pagerank 值是：&quot;, pagerank_list)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; pagerank 值是： &#123;&#x27;A&#x27;: 1.1390724191374332e-06, &#x27;B&#x27;: 1.6601150213484846e-06, &#x27;C&#x27;: 0.999995540697538, &#x27;D&#x27;: 1.6601150213484846e-06&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单的将前面图中的C-&gt;A的边去掉，给C点增加一个自环(等级泄露)，再进行程序的运行，C的PR值变得很高(这里没有管networkx中PageRank算法的实际实现，使用迭代计算C的PR值升高到一半了)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line"># 等级沉默</span><br><span class="line"># M = np.array([</span><br><span class="line">#     [0, 1/2, 1/2, 0],</span><br><span class="line">#     [1/2, 0, 0, 1],</span><br><span class="line">#     [0, 0, 0, 0],</span><br><span class="line">#     [1/2, 1/2, 1/2, 0]</span><br><span class="line"># ])</span><br><span class="line"></span><br><span class="line"># 等级泄露</span><br><span class="line">M = np.array([</span><br><span class="line">    [0, 1/2, 0, 0],</span><br><span class="line">    [1/3, 0, 0, 1/2],</span><br><span class="line">    [1/3, 0, 1, 1/2],</span><br><span class="line">    [1/3, 1/2, 0, 0]</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">R = np.array([</span><br><span class="line">    [1/4],</span><br><span class="line">    [1/4],</span><br><span class="line">    [1/4],</span><br><span class="line">    [1/4]</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">I = np.array([</span><br><span class="line">    [1],</span><br><span class="line">    [1],</span><br><span class="line">    [1],</span><br><span class="line">    [1]</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">for i in range(20):</span><br><span class="line">    R = 0.8 * np.dot(M, R) + 0.2/4 * I</span><br><span class="line">    print(i, &#x27;:&#x27;, R)</span><br></pre></td></tr></table></figure>
+<p>最后，推荐大家看看reference2的博客，里面有关于使用PageRank进行数据挖掘希拉里邮件门的案例。</p>
+<h4 id=""><a href="#" class="headerlink" title=""></a></h4><ol>
+<li>李航，《统计学习方法》第二版</li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jpcflyer/p/11180263.html">https://www.cnblogs.com/jpcflyer/p/11180263.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://networkx.github.io/documentation/stable/tutorial.html#">https://networkx.github.io/documentation/stable/tutorial.html#</a></li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#PageRank%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">PageRank算法描述</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">1.0.0.1.</span> <span class="toc-text"></span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&text=PageRank算法"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&is_video=false&description=PageRank算法"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=PageRank算法&body=Check out this article: http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&title=PageRank算法"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&name=PageRank算法&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/PageRank%E7%AE%97%E6%B3%95/&t=PageRank算法"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

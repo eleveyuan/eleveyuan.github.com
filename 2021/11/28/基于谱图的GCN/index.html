@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Graph现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。 graph是由点集合V，边集合E，以及两点相连边的权重集合W构成的集">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于谱图的GCN">
+<meta property="og:url" content="http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="Graph现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。 graph是由点集合V，边集合E，以及两点相连边的权重集合W构成的集">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-11-28T03:58:08.000Z">
+<meta property="article:modified_time" content="2021-11-28T04:30:48.097Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="傅里叶变换">
+<meta property="article:tag" content="GCN">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>基于谱图的GCN</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/11/28/PageRank%E7%AE%97%E6%B3%95/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/28/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2-numpy/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&text=基于谱图的GCN"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&is_video=false&description=基于谱图的GCN"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=基于谱图的GCN&body=Check out this article: http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&name=基于谱图的GCN&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&t=基于谱图的GCN"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        基于谱图的GCN
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-28T03:58:08.000Z" itemprop="datePublished">2021-11-28</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/GCN/" rel="tag">GCN</a>, <a class="tag-link-link" href="/tags/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2/" rel="tag">傅里叶变换</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="Graph"><a href="#Graph" class="headerlink" title="Graph"></a>Graph</h1><p>现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。</p>
+<p>graph是由点集合V，边集合E，以及两点相连边的权重集合W构成的集合，即$G=(V,E,W)$。对于图片而言，将像素点当做点集合，相邻像素连线形成边集合，边之间的权重都是平均分布，这样也可以将其看做一个图结构。</p>
+<h1 id="卷积"><a href="#卷积" class="headerlink" title="卷积"></a>卷积</h1><p>然后我们来抓住这个字母C(convolution)。</p>
+<p>简而言之，先从傅里叶变换先开始，傅里叶变换是将一个周期函数表示成有一组正交函数基的线性组合，也即我们将原函数投影到的以得到的正交函数基构成的空间中。这组函数基由正弦函数与余弦函数来表示，写成负指数形式：<br>$$F.T: \hat{f(s)}=\int ^{\infty}_{\infty}g(t)e^{-2\pi ist}dt$$</p>
+<p>$$I.F.T: g(t)=\int ^{\infty}_{\infty}\hat{f(t)}e^{2\pi ist}ds$$</p>
+<p>对于两个傅里叶变换之后相加，由积分相加的性质很快可以得到：<br>$$Ff(s)+Fg(s)=(F(f+g))(s)$$<br>即：$Ff+Fg=F(f+g)$</p>
+<p>那么对于两个傅里叶变换之后的乘法呢？</p>
+<p>$$(Ff)(Fg)=\int ^{\infty} _{-\infty} e^{-2\pi ist_1} f(t_1)dt_1 \int ^{\infty} _{-\infty} e^{-2\pi ist_2} g(t_2) dt_2$$</p>
+<p>$$=\int ^{\infty} _{-\infty}(\int ^{\infty} _{-\infty} e^{-2\pi is(t_1+t_2)}f(t_1)dt_1)g(t_2)dt_2$$</p>
+<p>令$u=t_1+t_2$</p>
+<p>$$(Ff)(Fg)=\int ^{\infty} _{-\infty}(\int ^{\infty} _{-\infty} e^{-2\pi isu} f(t_1)dt_1) g(u-t_1) d(u-t_1)$$</p>
+<p>$$=\int ^{\infty} _{-\infty}(\int ^{\infty} _{-\infty}g(u-t_1) f(t_1) dt_1) e^{-2\pi isu}du$$</p>
+<p>令$h(u)=\int ^{\infty} _{-\infty} g(u- t_1) f(t_1) dt_1$，得到下式：</p>
+<p>$$(Ff)(Fg)=\int ^{\infty}_{-\infty} h(u)e^{-2\pi i s u}du=(Fh)(s)$$</p>
+<p>所以得到<strong>卷积</strong>:<br>$$(g\ast f)(t)=\int ^{\infty}_{-\infty}g(\tau-t)f(t)dt$$<br>由上述推导可得到：<br>$$(Ff)(Fg)=F(g \ast f)$$</p>
+<h1 id="Graph-Convolution"><a href="#Graph-Convolution" class="headerlink" title="Graph Convolution"></a>Graph Convolution</h1><p>前面分别了解字母G与字母C，那么GC如何成为整体呢？</p>
+<p>首先我们从字母C可以看到，这个连接的桥梁是Fourier transform。但是我们无法在Graph上直接使用FT的。傅里叶变换的本质就是将原函数分解成由正交基函数(这组函数基就是负指数函数)组成的线性组合，按线代理解则是将函数投影到新的由这一组正交基函数的空间中。对应于这个概念，我们就要提到operator与eigenfunction(特征函数)这两个概念了。</p>
+<p>在线代中对于一个向量在矩阵的作用下，依旧等于这个向量或向量的缩放，我们称这个向量是特征向量，前人们发现有些函数在一些计算下依旧会保持不变或者缩放，这种函数就叫做eigenfunction，例如，$e^x$这个钉子户函数，在一阶求导算子的计算下，$\frac{d}{dx}e^x = e^x$，$e^x$就是一阶求导算子的特征函数，在进行二阶求导，你就会发现这个函数还是钉在原地。你再看看它在傅里叶变换中的表现，$e^{-2\pi i s t}$具有正交性，而且和$e^x$一样是可以成为特征函数的，只是比$e^x$多了缩放因子。</p>
+<p>对于$e^{-2\pi i s t}$来说，他是一维拉普拉斯算子$\frac{d^2}{dx^2}$的特征函数，拉普拉斯算子的定义是函数梯度的散度，也即：$\bigtriangleup = \sum _i \frac{\partial^2}{\partial x_i ^2}$</p>
+<p>离散化拉普拉斯算子：<br>$$\frac{\partial^2 f(x)}{\partial x ^2}=f^{\prime \prime}(x) \approx f^\prime (x) - f ^\prime(x-1) \approx f(x+1)-f(x)-f(x)+f(x-1) = f(x+1) +f(x-1) -2f(x)$$</p>
+<p>二维情况下：<br>$$\bigtriangleup=\frac{\partial^2 f(x, y)}{\partial x ^2}+ \frac{\partial^2 f(x, y)}{\partial y ^2}  \approx f(x+1, y) +f(x-1, y)+f(x, y+1)+f(x, y-1)-4f(x, y)$$</p>
+<p>可以从上式看到，拉普拉斯算子表示的是当前点与周围相连点之间的差值，导数的分母为$\Delta x = (x+1) - x$。但是对于图来说，我们不能单纯的使用$\Delta x = (x+1) - x$，我们需要考虑到两个相连接点之间的距离，即，$(f_i -f_j)/\delta_{ij}=&gt;w_{ij}(f_i-f_j)$，所以得到下式：<br>$$\bigtriangleup = \sum_i \frac{\partial^2f}{\partial i^2} \approx \sum_{j \in N_i}w_{ij}(f_i -f_j)$$<br>$$\sum_{j \in N_i}w_{ij}(f_i -f_j) = \sum_j w_{ij}f_i -\sum_j w_{ij}f_j=[(D-W)f]_i$$<br>$\bigtriangleup f = (D-W)f = Lf$，这便是我们的拉普拉斯矩阵。</p>
+<p>由上述我们知道拉普拉斯矩阵就是图上的拉普拉斯算子。拉普拉斯矩阵，是一个半正定矩阵，有完整的正交向量基。所以仿照傅里叶变换，就可以使用拉普拉斯矩阵来得到图傅里叶变换，原来的负指数则有拉普拉斯矩阵的的特征向量替代，得到变换后的图域为关于特征值的函数：</p>
+<p>$$\hat{f}(\lambda _l)= &lt;f, u_l&gt;=\sum^N _{l}f(i)u^*_l(i) $$</p>
+<p>图傅里叶逆变换：</p>
+<p>$$f(i) = \sum ^N _l \hat{f} (\lambda _l) u_l (i)$$</p>
+<p>矩阵形式：</p>
+<p>$$\hat{f} =U^T f$$</p>
+<p>$$f = U\hat{f}$$</p>
+<p>有了图傅里叶变换，那么图卷积呢？</p>
+<p>根据前文讲的卷积，进行推广：<br>$$(f \ast g)_G = U((U^T g)\odot (U^Tf))$$<br>$\odot$为哈达玛积。</p>
+<p>至此GCN的G与C的理论就结束了。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Shuman D I, Narang S K, Frossard P, et al. The emerging field of signal processing on graphs: Extending high-dimensional data analysis to networks and other irregular domains[J]. IEEE signal processing magazine, 2013, 30(3): 83-98.</li>
+<li>Hammond D K, Vandergheynst P, Gribonval R. Wavelets on graphs via spectral graph theory[J]. Applied and Computational Harmonic Analysis, 2011, 30(2): 129-150.</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&text=基于谱图的GCN"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&is_video=false&description=基于谱图的GCN"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=基于谱图的GCN&body=Check out this article: http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&title=基于谱图的GCN"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&name=基于谱图的GCN&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/28/%E5%9F%BA%E4%BA%8E%E8%B0%B1%E5%9B%BE%E7%9A%84GCN/&t=基于谱图的GCN"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
