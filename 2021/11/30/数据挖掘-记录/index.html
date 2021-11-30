@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="特征生成 首先可以直接使用数据提供的基础特征进行一版模型的训练 不考虑具体的业务场景，可以进行对数据特征暴力加减乘除运算 考虑业务场景，可以引入统计量来贴合业务场景  使用常用库进行查看数据分布情况 12df.info() # 查看空值，类型情况，对于一些数值是object类型需要进行转换df.descirbe() # 查看常见的描述性统计信息  查看数据特征分布之间关系，可以关注以下两点  关注">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据挖掘-记录">
+<meta property="og:url" content="http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="特征生成 首先可以直接使用数据提供的基础特征进行一版模型的训练 不考虑具体的业务场景，可以进行对数据特征暴力加减乘除运算 考虑业务场景，可以引入统计量来贴合业务场景  使用常用库进行查看数据分布情况 12df.info() # 查看空值，类型情况，对于一些数值是object类型需要进行转换df.descirbe() # 查看常见的描述性统计信息  查看数据特征分布之间关系，可以关注以下两点  关注">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/stacking.png">
+<meta property="article:published_time" content="2021-11-30T05:22:09.000Z">
+<meta property="article:modified_time" content="2021-11-30T05:28:38.280Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="数据挖掘">
+<meta property="article:tag" content="机器学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/stacking.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>数据挖掘-记录</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/28/%E4%BF%A1%E6%81%AF%E8%AE%BA%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86cook/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&text=数据挖掘-记录"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&is_video=false&description=数据挖掘-记录"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=数据挖掘-记录&body=Check out this article: http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&name=数据挖掘-记录&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&t=数据挖掘-记录"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E7%94%9F%E6%88%90"><span class="toc-number">1.</span> <span class="toc-text">特征生成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E8%9E%8D%E5%90%88%E6%96%B9%E9%9D%A2"><span class="toc-number">2.</span> <span class="toc-text">模型融合方面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%8E%9F%E5%88%99"><span class="toc-number">3.</span> <span class="toc-text">一些原则</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        数据挖掘-记录
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-30T05:22:09.000Z" itemprop="datePublished">2021-11-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/" rel="tag">数据挖掘</a>, <a class="tag-link-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="特征生成"><a href="#特征生成" class="headerlink" title="特征生成"></a>特征生成</h1><ol>
+<li>首先可以直接使用数据提供的基础特征进行一版模型的训练</li>
+<li>不考虑具体的业务场景，可以进行对数据特征暴力加减乘除运算</li>
+<li>考虑业务场景，可以引入统计量来贴合业务场景</li>
+</ol>
+<p>使用常用库进行查看数据分布情况</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">df.info() <span class="comment"># 查看空值，类型情况，对于一些数值是object类型需要进行转换</span></span><br><span class="line">df.descirbe() <span class="comment"># 查看常见的描述性统计信息</span></span><br></pre></td></tr></table></figure>
+
+<p>查看数据特征分布之间关系，可以关注以下两点</p>
+<ol>
+<li>关注单独特征的分布情况</li>
+<li>两两特征间是否有明确的可以表示的线性或非线性关系</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sns.pairplot(data, hue=<span class="string">&#x27;***&#x27;</span>, palette=<span class="string">&#x27;GnBu&#x27;</span>, corner=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>查看特征之间相关性，一般我们算法会倾向于特征之间相关性更低，例如：朴素贝叶斯算法的独立性假设，马尔科夫假设</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">corr = data.corr(method = <span class="string">&#x27;spearman&#x27;</span>) <span class="comment"># 使用spearam系数计算相关性</span></span><br><span class="line">sns.heatmap(corr, annot=<span class="literal">True</span>, fmt=<span class="string">&#x27;.2f&#x27;</span>, cmap=<span class="string">&#x27;Blues&#x27;</span>) <span class="comment"># 使用热度图查看特征相关性</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>统计量&amp;方法</strong> </p>
+<table>
+<thead>
+<tr>
+<th>统计量</th>
+<th>公式</th>
+<th>pandas/numpy/scikit</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>均值</td>
+<td>$u$</td>
+<td>mean()</td>
+<td></td>
+</tr>
+<tr>
+<td>方差</td>
+<td>$\theta$</td>
+<td>std()</td>
+<td></td>
+</tr>
+<tr>
+<td>差分</td>
+<td>$y ^{\prime} = y_t-y_{t-1}$</td>
+<td></td>
+<td>非平稳时间序列变平稳的方法——计算相邻观测值之间的差值</td>
+</tr>
+<tr>
+<td>环比</td>
+<td>$y_t / y _{t-1}$</td>
+<td></td>
+<td>本次统计段与相连的上次统计段之间的比较</td>
+</tr>
+<tr>
+<td>离差率(变异系数)</td>
+<td>$u / \theta$</td>
+<td></td>
+<td>离差率比起标准差来，变异系数的好处是不需要参照数据的平均值。变异系数是一个<strong>无量纲量</strong>，因此在比较两组量纲不同或均值不同的数据时，应该用变异系数而不是标准差来作为比较的参考。当平均值接近于0的时候，微小的扰动也会对变异系数产生巨大影响，因此造成精确度不足。变异系数无法发展出类似于均值的置信区间的工具。</td>
+</tr>
+<tr>
+<td>调和平均</td>
+<td>$\frac{1}{1/a + 1/b}$</td>
+<td></td>
+<td>对于两个特征之间关系，可以使用类似<strong>调和平均</strong>方式，来均衡两个特征之间的关系，生成新的特征</td>
+</tr>
+<tr>
+<td>取log</td>
+<td>$log n$</td>
+<td></td>
+<td>对一些变量分布有<strong>倾斜</strong>时，可以使用取对数进行改正分布趋于正态分布</td>
+</tr>
+<tr>
+<td>分箱</td>
+<td></td>
+<td></td>
+<td>例如，把12点15，分到12点这个箱子，将数据离散化</td>
+</tr>
+<tr>
+<td>编码</td>
+<td></td>
+<td>LabelEncoder()</td>
+<td>把一些分类名进行label编码</td>
+</tr>
+</tbody></table>
+<h1 id="模型融合方面"><a href="#模型融合方面" class="headerlink" title="模型融合方面"></a>模型融合方面</h1><p>主要是从bagging/bootstrap/boosting思想理解之上，做更多横向与纵向的设计。</p>
+<p>结果层：</p>
+<ol>
+<li>回归问题：对多个模型结果简单平均</li>
+<li>分类问题：对多个模型结果进行投票</li>
+</ol>
+<p>设计层面：</p>
+<ol>
+<li>stacking, 通过交叉验证思想，划分数据集，分别轮替训练四折，预测另外一折以及测试接(这里可以理解为五个独立的模型训练预测)，然后将被预测的5折结果数据堆叠，对测试集结果数据5次结果求平均，然后将三个算法的三次结果水平拼接，输入一个弱分类器进行预测(防止过拟合) –(来自datawhale)</li>
+</ol>
+<p><img src="/images/stacking.png" alt="datawhale"><br>2. blending, 不同于stacking，blending则是留一法，用不相交的数据进行训练预测</p>
+<p>当然，这些都可以作为一个base思想，在此基础上，可以自己设计，例如将基础特征与输出的概率值拼接，特征维度增加，再去训练</p>
+<h1 id="一些原则"><a href="#一些原则" class="headerlink" title="一些原则"></a>一些原则</h1><p>为了保证整个模型训练，测试是<strong>准确</strong>的，在构造数据集的时候需要确定遵循一些原则</p>
+<ol>
+<li>数据特征不出现偏移，例如： a特征不会写到b特征上</li>
+<li>标签不出现泄露，例如：把测试集加入到训练中</li>
+<li>考虑业务场景，例如：对于t+1场景，预测明天的数据，今天的数据是拿不到的，需要明天才可以拿到。</li>
+<li>对于时序数据，做交叉验证，是不好做的，容易用未来的一折数据去预测历史的一折数据。</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E7%94%9F%E6%88%90"><span class="toc-number">1.</span> <span class="toc-text">特征生成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E8%9E%8D%E5%90%88%E6%96%B9%E9%9D%A2"><span class="toc-number">2.</span> <span class="toc-text">模型融合方面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%8E%9F%E5%88%99"><span class="toc-number">3.</span> <span class="toc-text">一些原则</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&text=数据挖掘-记录"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&is_video=false&description=数据挖掘-记录"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=数据挖掘-记录&body=Check out this article: http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&title=数据挖掘-记录"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&name=数据挖掘-记录&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/&t=数据挖掘-记录"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
