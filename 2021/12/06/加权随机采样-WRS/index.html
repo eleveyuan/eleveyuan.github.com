@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="如题所示，权重随机取样(Weight Random Sampling, WRS)，这一应用需求，许多地方都会用到。 首先我们要确定权重随机取样是什么？在我们抽取样本时考虑的是无放回。权重随机取样的每个样本都是带有权重，抽取样本时由样本的权重所决定。下面是权重随机取样算法的一般描述。 权重随机取样算法(algorithm D):输入数据：$n$个带有权重的数据样本集$V$输出结果：$m$个WRS算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="加权随机采样-WRS">
+<meta property="og:url" content="http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="如题所示，权重随机取样(Weight Random Sampling, WRS)，这一应用需求，许多地方都会用到。 首先我们要确定权重随机取样是什么？在我们抽取样本时考虑的是无放回。权重随机取样的每个样本都是带有权重，抽取样本时由样本的权重所决定。下面是权重随机取样算法的一般描述。 权重随机取样算法(algorithm D):输入数据：$n$个带有权重的数据样本集$V$输出结果：$m$个WRS算法">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-12-06T13:28:49.000Z">
+<meta property="article:modified_time" content="2021-12-06T13:31:51.088Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>加权随机采样-WRS</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/11/30/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98-%E8%AE%B0%E5%BD%95/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&text=加权随机采样-WRS"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&is_video=false&description=加权随机采样-WRS"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=加权随机采样-WRS&body=Check out this article: http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&name=加权随机采样-WRS&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&t=加权随机采样-WRS"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        加权随机采样-WRS
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-12-06T13:28:49.000Z" itemprop="datePublished">2021-12-06</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>如题所示，权重随机取样(Weight Random Sampling, WRS)，这一应用需求，许多地方都会用到。</p>
+<p>首先我们要确定权重随机取样是什么？在我们抽取样本时考虑的是无放回。权重随机取样的每个样本都是带有权重，抽取样本时由样本的权重所决定。下面是权重随机取样算法的一般描述。</p>
+<p><strong>权重随机取样算法(algorithm D)</strong>:<br>输入数据：$n$个带有权重的数据样本集$V$<br>输出结果：$m$个WRS算法抽取的数据样本集$S$</p>
+<ol>
+<li>重复$2-3$步</li>
+<li>计算每个样本$v_i$被抽取的概率:$P(v_i) = \frac{w_i}{\sum _{s_j \in V-S} w_j}$</li>
+<li>随机从$V-S$抽取一个样本$v_i$，然后放入集合$S$</li>
+</ol>
+<p>对于均匀随机取样(uniform RS)，算法的关键在于Alias Method、Partial Sum Trees and the Acceptance、Rejection method(见reference 3)，但是对于WRS却不适用。(reference 1\2)的论文则给出了解决WRS的算法。</p>
+<p><strong>权重随机取样算法(algorithm A)</strong>:<br>输入数据：$n$个带有权重的数据样本集$V$<br>输出结果：$m$个WRS算法抽取的数据样本集$S$</p>
+<ol>
+<li>对于每一个样本$v_i \in V$和随机数$u_i \in  (0, 1)$，$k_i = u_i ^{1 / w_i}$</li>
+<li>挑选$m$个最大的$k_i$作为WRS集合</li>
+</ol>
+<p>算法的主要思想来自于，对于任意两个符合均匀分布$(0, 1)$的变量，$u_1$和$u_2$，如果$x_1 = u_1 ^{w_1}$和$x_2 = u_2 ^{w_2}$，其中$w_1, w_2 &gt; 0$，则有$P(x_1 \leq x_2)=\frac{w_2}{w_1 + w_2}$</p>
+<p>算法python代码(<strong>权重依据数据到已知直线的距离</strong>):</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getWeight</span>(<span class="params">data</span>):</span></span><br><span class="line">    weights = []</span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> data:</span><br><span class="line">        weights.append(<span class="built_in">abs</span>(item[<span class="number">0</span>]-item[<span class="number">1</span>]+<span class="number">15</span>) / math.sqrt(<span class="number">2</span>))</span><br><span class="line">    <span class="keyword">return</span> np.array(weights)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">wrsA</span>(<span class="params">data, weights</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot; Weighted random sampling &quot;&quot;&quot;</span></span><br><span class="line">    items_len = <span class="built_in">len</span>(data)</span><br><span class="line">    U = np.random.uniform(<span class="number">0</span>, <span class="number">1</span>, items_len)  <span class="comment"># 均值分布</span></span><br><span class="line">    keys = U ** (<span class="number">1</span> / weights)  <span class="comment"># 生成keys</span></span><br><span class="line">    <span class="keyword">return</span> np.argsort(-keys)[:<span class="number">8</span>]  <span class="comment"># 降序排列</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    data = np.array([</span><br><span class="line">        [<span class="number">52</span>, <span class="number">82</span>],</span><br><span class="line">        [<span class="number">56</span>, <span class="number">79</span>],</span><br><span class="line">        [<span class="number">64</span>, <span class="number">90</span>],</span><br><span class="line">        [<span class="number">69</span>, <span class="number">95</span>],</span><br><span class="line">        [<span class="number">58</span>, <span class="number">96</span>],</span><br><span class="line">        [<span class="number">62</span>, <span class="number">95</span>],</span><br><span class="line">        [<span class="number">53</span>, <span class="number">73</span>],</span><br><span class="line">        [<span class="number">72</span>, <span class="number">91</span>],</span><br><span class="line">        [<span class="number">77</span>, <span class="number">90</span>],</span><br><span class="line">        [<span class="number">54</span>, <span class="number">70</span>],</span><br><span class="line">        [<span class="number">50</span>, <span class="number">74</span>],</span><br><span class="line">        [<span class="number">50</span>, <span class="number">81</span>],</span><br><span class="line">        [<span class="number">61</span>, <span class="number">85</span>]])</span><br><span class="line">    weights = getWeight(data)</span><br><span class="line">    idx = <span class="literal">None</span></span><br><span class="line">    all_idx = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>):</span><br><span class="line">        idx = wrsA(data, weights)</span><br><span class="line">        all_idx.extend(<span class="built_in">list</span>(idx))</span><br><span class="line"></span><br><span class="line">    pure_all_idx = <span class="built_in">sorted</span>(<span class="built_in">list</span>(<span class="built_in">set</span>(all_idx)))</span><br><span class="line">    result = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> pure_all_idx:</span><br><span class="line">        result.append([i, all_idx.count(i)])</span><br><span class="line"></span><br><span class="line">    pure_all_idx = np.array(pure_all_idx)</span><br><span class="line">    result = np.array(result)</span><br><span class="line"></span><br><span class="line">    plt.figure(figsize=(<span class="number">14</span>, <span class="number">10</span>))</span><br><span class="line">    ax = plt.subplot(<span class="number">211</span>)</span><br><span class="line">    rects = ax.bar(result[:, <span class="number">0</span>], result[:, <span class="number">1</span>])</span><br><span class="line">    plt.xticks(result[:, <span class="number">0</span>], result[:, <span class="number">0</span>])</span><br><span class="line">    ax.set_title(<span class="string">&#x27;sampling bar (weight, num of sampling)&#x27;</span>)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">autolabel</span>(<span class="params">rects, weights</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;Attach a text label above each bar in *rects*, displaying its height.&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">for</span> rect, weight <span class="keyword">in</span> <span class="built_in">zip</span>(rects, weights):</span><br><span class="line">            height = rect.get_height()</span><br><span class="line">            ax.annotate(<span class="string">&#x27;(&#123;&#125;,&#123;&#125;)&#x27;</span>.<span class="built_in">format</span>(<span class="built_in">round</span>(weight, <span class="number">2</span>), height),</span><br><span class="line">                        xy=(rect.get_x() + rect.get_width() / <span class="number">2</span>, height),</span><br><span class="line">                        xytext=(<span class="number">0</span>, <span class="number">3</span>),  <span class="comment"># 3 points vertical offset</span></span><br><span class="line">                        textcoords=<span class="string">&quot;offset points&quot;</span>,</span><br><span class="line">                        ha=<span class="string">&#x27;center&#x27;</span>, va=<span class="string">&#x27;bottom&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    autolabel(rects, weights)</span><br><span class="line"></span><br><span class="line">    ax = plt.subplot(<span class="number">212</span>)</span><br><span class="line">    ax.set_title(<span class="string">&#x27;WRS&#x27;</span>)</span><br><span class="line">    plt.scatter(data[:, <span class="number">0</span>], data[:, <span class="number">1</span>], c=<span class="string">&#x27;orange&#x27;</span>, label=<span class="string">&#x27;unselected&#x27;</span>)</span><br><span class="line">    plt.legend()</span><br><span class="line">    x = np.arange(<span class="number">50</span>, <span class="number">80</span>, <span class="number">0.01</span>)</span><br><span class="line">    y = x + <span class="number">15</span></span><br><span class="line">    plt.plot(x, y)</span><br><span class="line">    plt.annotate(<span class="string">r&#x27;$y=x+15$&#x27;</span>, xy=(<span class="number">65</span>, <span class="number">78</span>))</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(data)):</span><br><span class="line">        <span class="keyword">if</span> i <span class="keyword">in</span> idx:</span><br><span class="line">            plt.scatter(data[i, <span class="number">0</span>], data[i, <span class="number">1</span>], c=<span class="string">&#x27;black&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    plt.show()</span><br></pre></td></tr></table></figure>
+
+<p>reference 2中证明上面算法的正确性，需要深究的可以查看这篇论文。此外，如果抽样数据大小最初是未知的(数据流形式)，可以使用论文中A_res算法以及其改进的算法A_ExpJ。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Pavlos S. Efraimidis, et al.  Weighted Random Sampling (2005; Efraimidis, Spirakis)</li>
+<li>Pavlos S. Efraimidis, et al. Weighted random sampling with a reservoir. 2006</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/42630740">https://zhuanlan.zhihu.com/p/42630740</a>﻿</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&text=加权随机采样-WRS"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&is_video=false&description=加权随机采样-WRS"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=加权随机采样-WRS&body=Check out this article: http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&title=加权随机采样-WRS"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&name=加权随机采样-WRS&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/&t=加权随机采样-WRS"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
