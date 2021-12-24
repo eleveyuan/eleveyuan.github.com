@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="这篇论文(reference 1)对于语言模型的贡献是十分巨大的(reference 2)。 拟合高维数据的常用方法有combining model，通过加权多个单模型去生成数据，然后在用梯度提升或者em算法进行数据拟合。缺点是不能很好地拟合高维数据(具体在文章中有解释，本人暂时没有去深入去理解这个。) 另外一种方法就是通过对多个单模型进行相乘在归一化进行生成数据，也就是论文中作者要讨论的PoE模">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Training Products of Experts by Minimizing Contrastive Divergence">
+<meta property="og:url" content="http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="这篇论文(reference 1)对于语言模型的贡献是十分巨大的(reference 2)。 拟合高维数据的常用方法有combining model，通过加权多个单模型去生成数据，然后在用梯度提升或者em算法进行数据拟合。缺点是不能很好地拟合高维数据(具体在文章中有解释，本人暂时没有去深入去理解这个。) 另外一种方法就是通过对多个单模型进行相乘在归一化进行生成数据，也就是论文中作者要讨论的PoE模">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-12-24T13:47:42.000Z">
+<meta property="article:modified_time" content="2021-12-24T13:58:11.134Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="PoE">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Training Products of Experts by Minimizing Contrastive Divergence</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/12/06/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA%E9%87%87%E6%A0%B7-WRS/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&text=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&is_video=false&description=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Training Products of Experts by Minimizing Contrastive Divergence&body=Check out this article: http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&name=Training Products of Experts by Minimizing Contrastive Divergence&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&t=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Training Products of Experts by Minimizing Contrastive Divergence
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-12-24T13:47:42.000Z" itemprop="datePublished">2021-12-24</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/PoE/" rel="tag">PoE</a>, <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>, <a class="tag-link-link" href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag">论文阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>这篇论文(reference 1)对于语言模型的贡献是十分巨大的(reference 2)。</p>
+<p>拟合高维数据的常用方法有combining model，通过加权多个单模型去生成数据，然后在用梯度提升或者em算法进行数据拟合。缺点是不能很好地拟合高维数据(具体在文章中有解释，本人暂时没有去深入去理解这个。)</p>
+<p>另外一种方法就是通过对多个单模型进行相乘在归一化进行生成数据，也就是论文中作者要讨论的PoE模型。</p>
+<p>PoE模型的思想是把很多个分布乘起来再重新归一化得到一个新的分布，而这里的每一个分布就是一个专家（expert）。PoE的优点是可以是总模型比单模型更好的代表数据的分布。</p>
+<p>$p(d|\theta_1, …, \theta_n)=\frac{\prod_m f_m(d|\theta_m)}{\sum_c \prod_m f_m(c|\theta _m)}$–(1)</p>
+<p>其中d为数据，$\theta$ 为参数，$f_m$为模型m的条件概率，$c$为所有可能的数据</p>
+<p>对于一个PoE模型学习拟合数据分布，更新参数，最直观的方式就是引入log-likelihood(可以联想得到log-linear，引入了线性)。</p>
+<p>$\frac{\partial log p(d|\theta_1, …, \theta_n)}{\partial \theta_m}=\frac{\partial log f_m(d|\theta_m)}{\partial \theta_m} - \sum_c p(c|\theta_1, …, \theta_n)\frac{\partial log f_m(c|\theta_m)}{\partial \theta_m}$ –(2)</p>
+<p>上式第二项计算时使用一个技巧$f\frac{logf}{\partial x}=\frac{\partial f}{\partial x}$，然后替换就可以算出来。第二项可以看做是一个导数log probability的期望(知道期望的数学定义为$\sum x p(x)$即可理解)，作者提到了第二项的c是我们期望的fantasy data，通过参数更新来理解，模型拟合越来越好的时候，概率生成模型整个数据使得模型最佳。</p>
+<p>为了去计算这个式子，第二项这个直接计算会有较大的难度，可以采取概率的推断的方式，例如使用Rejection采样计算效率也不太好，第二种使用gibbs采样，要求马尔科夫链收敛到平稳分布。效率提上来了，但是在平稳分布采样时会带来较大的方差。</p>
+<p>通过gibbs不停采样得到平稳分布，最大化log-likelihood就等价于最小化KL散度。也即在马科夫链中初始分布与平稳分布之间的距离关系</p>
+<p>$P^0 || P^{\infty}  _{\theta} = \sum_d P^0 log P^0(d)-\sum _d P^0(d) log P ^{\infty} _{\theta} (d) = -H(P^0) - &lt; log P ^{\infty} _{\theta}&gt; _{P^0}$–(3)</p>
+<p>(2)式可用下式重写：</p>
+<p>$&lt;\frac{\partial log P ^{\infty}  _{\theta} (D)}{\partial \theta _m}&gt; _{P^0}= &lt;\frac{\partial logf _{\theta _m}}{\partial \theta _m}&gt; _{P^0}-&lt;\frac{\partial log f _{\theta_m}}{\partial \theta _m}&gt; _{P ^\infty _\theta}$–(4)</p>
+<p>上式如前述都是看做下标对应的导数log概率的期望。</p>
+<p>再从马尔科夫角度出发，当状态平稳时，通过概率转移矩阵概率分布是不会变的，如果$P_0$与$P_1$这两步，在转移时不发生变化就说明分布已经平稳，同时$P_1$比$P_0$更接近平稳，在距离上也即$P^0 || P^\infty _\theta$比$P^1 || P^\infty _\theta$更大，所以这两者越接近模型就会越好，就可得到</p>
+<p>$-\frac{\partial}{\partial \theta _m}(P^0 || P ^{\infty}  _{\theta} - P ^1 || P ^{\infty}  _{\theta}) \approx &lt;\frac{\partial log f _{\theta _m}}{\partial \theta _m}&gt; _{P ^0} - &lt;\frac{\partial logf _{\theta _m}}{\partial \theta _m}&gt; _{P ^1 _\theta}$</p>
+<p>这里约等于，是应为还有一个附带的项，影响较小，所以去掉了(论文第10节进行了相关解释)。</p>
+<p>通过以上将优化log-likelihood转化到kl散度，在使用kl散度的距离性质以及马尔科夫链的转移区域平稳的性质，将优化目标变成了优化<strong>contrastive divergence</strong>，大大的提高了计算效率以及规避了平稳分布下采样方差较大的问题。</p>
+<p>当然仅仅从理论上来看似乎一切都很合理，但是实际上如何去理解PoE模型获取局部的信息，还需要阅读一些代码及实验。先mark以下，主线任务还没完成。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Hinton G E. Training products of experts by minimizing contrastive divergence[J]. Neural computation, 2002, 14(8): 1771-1800.</li>
+<li>Bengio Y, Senécal J S. Quick training of probabilistic neural nets by importance sampling[C]//International Workshop on Artificial Intelligence and Statistics. PMLR, 2003: 17-24.</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&text=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&is_video=false&description=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Training Products of Experts by Minimizing Contrastive Divergence&body=Check out this article: http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&title=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&name=Training Products of Experts by Minimizing Contrastive Divergence&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/&t=Training Products of Experts by Minimizing Contrastive Divergence"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
