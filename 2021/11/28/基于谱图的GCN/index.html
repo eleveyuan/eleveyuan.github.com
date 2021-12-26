@@ -14,7 +14,7 @@
 <meta property="og:description" content="Graph现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。 graph是由点集合V，边集合E，以及两点相连边的权重集合W构成的集">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-11-28T03:58:08.000Z">
-<meta property="article:modified_time" content="2021-11-28T04:30:48.097Z">
+<meta property="article:modified_time" content="2021-12-26T08:36:43.163Z">
 <meta property="article:author" content="eleve">
 <meta property="article:tag" content="傅里叶变换">
 <meta property="article:tag" content="GCN">
@@ -119,7 +119,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
     </div>
   </span>
 </div>
@@ -173,9 +173,9 @@
   
 
   <div class="content" itemprop="articleBody">
-    <h1 id="Graph"><a href="#Graph" class="headerlink" title="Graph"></a>Graph</h1><p>现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。</p>
+    <h2 id="Graph"><a href="#Graph" class="headerlink" title="Graph"></a>Graph</h2><p>现在就来说说这个字母G，我们知道CNN对于图像处理是十分得心应手的，堪称是法宝，而CNN处理的图像是十分规则的，人们认为处理图像问题是在欧式空间上进行的，如果我们把图片的像素看做一个个独立的点相互连接，就可以看做是一个特殊的图结构。而GCN中的graph是指的抽象的图，就像离散数学中学的图结构以及数据结构中学的图结构。</p>
 <p>graph是由点集合V，边集合E，以及两点相连边的权重集合W构成的集合，即$G=(V,E,W)$。对于图片而言，将像素点当做点集合，相邻像素连线形成边集合，边之间的权重都是平均分布，这样也可以将其看做一个图结构。</p>
-<h1 id="卷积"><a href="#卷积" class="headerlink" title="卷积"></a>卷积</h1><p>然后我们来抓住这个字母C(convolution)。</p>
+<h2 id="卷积"><a href="#卷积" class="headerlink" title="卷积"></a>卷积</h2><p>然后我们来抓住这个字母C(convolution)。</p>
 <p>简而言之，先从傅里叶变换先开始，傅里叶变换是将一个周期函数表示成有一组正交函数基的线性组合，也即我们将原函数投影到的以得到的正交函数基构成的空间中。这组函数基由正弦函数与余弦函数来表示，写成负指数形式：<br>$$F.T: \hat{f(s)}=\int ^{\infty}_{\infty}g(t)e^{-2\pi ist}dt$$</p>
 <p>$$I.F.T: g(t)=\int ^{\infty}_{\infty}\hat{f(t)}e^{2\pi ist}ds$$</p>
 <p>对于两个傅里叶变换之后相加，由积分相加的性质很快可以得到：<br>$$Ff(s)+Fg(s)=(F(f+g))(s)$$<br>即：$Ff+Fg=F(f+g)$</p>
@@ -188,7 +188,7 @@
 <p>令$h(u)=\int ^{\infty} _{-\infty} g(u- t_1) f(t_1) dt_1$，得到下式：</p>
 <p>$$(Ff)(Fg)=\int ^{\infty}_{-\infty} h(u)e^{-2\pi i s u}du=(Fh)(s)$$</p>
 <p>所以得到<strong>卷积</strong>:<br>$$(g\ast f)(t)=\int ^{\infty}_{-\infty}g(\tau-t)f(t)dt$$<br>由上述推导可得到：<br>$$(Ff)(Fg)=F(g \ast f)$$</p>
-<h1 id="Graph-Convolution"><a href="#Graph-Convolution" class="headerlink" title="Graph Convolution"></a>Graph Convolution</h1><p>前面分别了解字母G与字母C，那么GC如何成为整体呢？</p>
+<h2 id="Graph-Convolution"><a href="#Graph-Convolution" class="headerlink" title="Graph Convolution"></a>Graph Convolution</h2><p>前面分别了解字母G与字母C，那么GC如何成为整体呢？</p>
 <p>首先我们从字母C可以看到，这个连接的桥梁是Fourier transform。但是我们无法在Graph上直接使用FT的。傅里叶变换的本质就是将原函数分解成由正交基函数(这组函数基就是负指数函数)组成的线性组合，按线代理解则是将函数投影到新的由这一组正交基函数的空间中。对应于这个概念，我们就要提到operator与eigenfunction(特征函数)这两个概念了。</p>
 <p>在线代中对于一个向量在矩阵的作用下，依旧等于这个向量或向量的缩放，我们称这个向量是特征向量，前人们发现有些函数在一些计算下依旧会保持不变或者缩放，这种函数就叫做eigenfunction，例如，$e^x$这个钉子户函数，在一阶求导算子的计算下，$\frac{d}{dx}e^x = e^x$，$e^x$就是一阶求导算子的特征函数，在进行二阶求导，你就会发现这个函数还是钉在原地。你再看看它在傅里叶变换中的表现，$e^{-2\pi i s t}$具有正交性，而且和$e^x$一样是可以成为特征函数的，只是比$e^x$多了缩放因子。</p>
 <p>对于$e^{-2\pi i s t}$来说，他是一维拉普拉斯算子$\frac{d^2}{dx^2}$的特征函数，拉普拉斯算子的定义是函数梯度的散度，也即：$\bigtriangleup = \sum _i \frac{\partial^2}{\partial x_i ^2}$</p>
@@ -236,7 +236,7 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Graph"><span class="toc-number">1.</span> <span class="toc-text">Graph</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF"><span class="toc-number">2.</span> <span class="toc-text">卷积</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Graph-Convolution"><span class="toc-number">3.</span> <span class="toc-text">Graph Convolution</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">

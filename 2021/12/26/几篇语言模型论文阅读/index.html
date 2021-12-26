@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="A Neural Probabilistic Language Model概率统计语言模型通常是计算序列中词的联合概率来进行预测，由于词的数量比较庞大，很容易出现维度爆炸等情况，所以作者提出了通过模型学习词的分布情况以及词的概率函数。 在概率统计模型中，通常学习已知的序列，并且尽可能的保证较短语序(降低学习难度，eg. n-gram)来进行学习：$P(w_t|w_1 ^t)&#x3D;P(w_t|w_{t-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="几篇语言模型论文阅读">
+<meta property="og:url" content="http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="A Neural Probabilistic Language Model概率统计语言模型通常是计算序列中词的联合概率来进行预测，由于词的数量比较庞大，很容易出现维度爆炸等情况，所以作者提出了通过模型学习词的分布情况以及词的概率函数。 在概率统计模型中，通常学习已知的序列，并且尽可能的保证较短语序(降低学习难度，eg. n-gram)来进行学习：$P(w_t|w_1 ^t)&#x3D;P(w_t|w_{t-">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/nnlm.png">
+<meta property="og:image" content="http://example.com/images/quicknnlm.png">
+<meta property="article:published_time" content="2021-12-26T08:27:21.000Z">
+<meta property="article:modified_time" content="2021-12-26T08:34:59.044Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="语言模型">
+<meta property="article:tag" content="Hierarchical Probabilistic">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/nnlm.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>几篇语言模型论文阅读</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/12/24/Training-Products-of-Experts-by-Minimizing-Contrastive-Divergence/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&text=几篇语言模型论文阅读"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&is_video=false&description=几篇语言模型论文阅读"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=几篇语言模型论文阅读&body=Check out this article: http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&name=几篇语言模型论文阅读&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&t=几篇语言模型论文阅读"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#A-Neural-Probabilistic-Language-Model"><span class="toc-number">1.</span> <span class="toc-text">A Neural Probabilistic Language Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-training-of-probabilistic-neural-nets-by-importance-sampling"><span class="toc-number">2.</span> <span class="toc-text">Quick training of probabilistic neural nets by importance sampling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#New-distributed-probabilistic-language-models"><span class="toc-number">3.</span> <span class="toc-text">New distributed probabilistic language models</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hierarchical-Probabilistic-Neural-Network-Language-Model"><span class="toc-number">4.</span> <span class="toc-text">Hierarchical Probabilistic Neural Network Language Model</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">4.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        几篇语言模型论文阅读
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-12-26T08:27:21.000Z" itemprop="datePublished">2021-12-26</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Hierarchical-Probabilistic/" rel="tag">Hierarchical Probabilistic</a>, <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>, <a class="tag-link-link" href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag">论文阅读</a>, <a class="tag-link-link" href="/tags/%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/" rel="tag">语言模型</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="A-Neural-Probabilistic-Language-Model"><a href="#A-Neural-Probabilistic-Language-Model" class="headerlink" title="A Neural Probabilistic Language Model"></a>A Neural Probabilistic Language Model</h2><p>概率统计语言模型通常是计算序列中词的联合概率来进行预测，由于词的数量比较庞大，很容易出现维度爆炸等情况，所以作者提出了通过模型学习<strong>词的分布情况</strong>以及<strong>词的概率函数</strong>。</p>
+<p>在概率统计模型中，通常学习已知的序列，并且尽可能的保证较短语序(降低学习难度，eg. n-gram)来进行学习：$P(w_t|w_1 ^t)=P(w_t|w_{t-1}^{t-n+1})$</p>
+<p>论文中作者谈到本文中涉及的内容都有前人的许多研究，例如神经网络可以很好地学习到高位离散数据的联合概率、预测下一个字符出现的概率、通过聚类表征词、以及前人使用神经网络对语言建模，还有通过训练序列得到词与词之间相似性的泛化表达等等</p>
+<p>论文(reference1/reference2)的主要目的是</p>
+<ol>
+<li>扩大(scaling)训练的序列长度，以获取更多的信息</li>
+<li>学习到词与词的相似性</li>
+<li>一个向量空间的连续特征表达</li>
+<li>概率函数，通过前文的词，获取下一个词出现的概率</li>
+<li>得到一个副产物：词特征向量</li>
+</ol>
+<p>论文的模型如下所示</p>
+<p><img src="/images/nnlm.png"></p>
+<p>第一遍阅读时，看论文是一直跟随作者的思路下去的(惊叹于作者论文阅读量以及对读者的照顾，详尽的介绍了前置知识)，没有对自己反问。读完模型问了自己几个问题，把自己问住了。。。</p>
+<p>Q:</p>
+<ol>
+<li>模型输入？</li>
+<li>网络逻辑？</li>
+<li>模型输出？</li>
+<li>模型是有监督还是无监督？</li>
+<li>如何训练的？</li>
+</ol>
+<p>A:</p>
+<ol>
+<li>模型输入，从上图可知，是词在词典中的索引，通过<strong>embedding层C</strong>(现在的说法)，所有词都共享C的参数</li>
+<li>第一个就是词的嵌入，第二个就是输出词出现的条件概率，论文将输入的词通过tanh进行激活，最后将输入窗口的词与激活的进行“残差”连接 $y = b+Wx+Utanh(d+Hx)$(x为当前当前单词上文所有单词)，通过softmax进行计算，获取一个归一化的概率</li>
+<li>模型的输出是通过softmax计算的概率</li>
+<li>无监督</li>
+<li>使用随机梯度上升算法，最大化log-likelihood概率加上惩罚项进行训练。</li>
+</ol>
+<h2 id="Quick-training-of-probabilistic-neural-nets-by-importance-sampling"><a href="#Quick-training-of-probabilistic-neural-nets-by-importance-sampling" class="headerlink" title="Quick training of probabilistic neural nets by importance sampling"></a>Quick training of probabilistic neural nets by importance sampling</h2><p>这篇(reference 3)是作者上一篇(reference 1)的续篇，讨论的高效的训练神经网络语言模型。更多的内容倾向于理论方面了。主要要解决的问题是由于语言模型的庞大在进行概率推断时，很难计算<strong>归一化项导数</strong>的问题。作者受到hinton论文(reference 4)的<strong>contrastive divergence</strong>思想的启发</p>
+<p><img src="/images/quicknnlm.png"></p>
+<p>上图的网络结构与上一篇论文所代表的结构是一样的。</p>
+<p>论文讨论了PoE模型与Mixture模型，PoE模型是一种conjunction模型，即两个概率相乘只有两个都较大时，结果才更大。mixture模型则是disjunction，即两个概率相加只要一个较大整体结果就会较大。作者也引入了他人对两种模型的实验(最大熵模型与deleted interpolation model在句法结构实验的对比)进行对比。来说明conjunction比disjunction更适合。</p>
+<p>在论文中就受hinton论文的影响使用了各种近似推断的来估计难以计算的归一化项。<strong>论文提到了因为主要使用mini-batch以及随机梯度算法训练，估计也不需要十分的准确</strong>，主要是通过MCMC/M-H/Important sampling这些<strong>采样方法</strong>对negative reinforcement项进行采样。</p>
+<h2 id="New-distributed-probabilistic-language-models"><a href="#New-distributed-probabilistic-language-models" class="headerlink" title="New distributed probabilistic language models"></a>New distributed probabilistic language models</h2><p>论文的主要讨论内容都是和Quick training of probabilistic neural nets by importance sampling差不多，主要是在此基础上详述了一些内容以及提出一些变种方法。</p>
+<ol>
+<li><p>神经网络对高阶数据的表征</p>
+</li>
+<li><p>Poe与mixture的区别，以及使用PoE的原因</p>
+</li>
+<li><p>概率质量的泛化：涉及一些语言需要考虑的内容(词的相似度，插值模型的平滑化，n-gram如何传递信息，多模态数据作为补充)</p>
+</li>
+<li><p>上面论文中的采样方法</p>
+</li>
+</ol>
+<p>主要提及的未来的一个工作是通过<strong>hierarchical clustering</strong>来提高算法速度(受到reference 6使用统计模型对于亚洲语言的建模的影响)</p>
+<p>对于$P(w|h)$单词w与前文h之间可以替换成当前词于前父节点的关系，这样只需要考虑当前节点的孩子节点的数量，也即每个词后面需要跟它搭配的可能性。通过这样可以很好的加速训练以及学习到<strong>额外的语义信息</strong>。</p>
+<p>这种方法在比较难学习到多义词的内部信息，也即词向量，作者考虑将学习的神经网络放入一个概率模型中，计算后验概率来表达。这样做会想PoE一样需要估计。</p>
+<h2 id="Hierarchical-Probabilistic-Neural-Network-Language-Model"><a href="#Hierarchical-Probabilistic-Neural-Network-Language-Model" class="headerlink" title="Hierarchical Probabilistic Neural Network Language Model"></a>Hierarchical Probabilistic Neural Network Language Model</h2><p>由于语言模型中训练数据的庞大，往往会给模型训练以及计算带来很大的工作量。word2vec为了提高其训练效率引入了Hierarchical Softmax这一方法来提高计算的效率。Hierarchical Softmax在<strong>reference 1/ refreence2</strong>开始引入语言模型。</p>
+<p>此篇讨论的依旧是优化学习函数$f(w _t, w _{t-1}, …, w _{t-n+1})= \frac{e ^{-g(w _t, w _{t-1}, …, w _{t-n+1})}}{\sum _v e ^{w _t, w _{t-1}, …, w _{t-n+1}}}$</p>
+<p>网络结构发生了一些变化:</p>
+<p>上述论文网络结构是: $y = b+Wx+Utanh(d+Hx)$</p>
+<p>此文网络结构是：$y = b + a ^T tanh(c + Wx + U F ^{T} _v)$</p>
+<p>其中x为当前单词上文的单词，$F _v$为当前单词。</p>
+<p>考虑的词与词之间有一定的相似性，相似的词语属于同一类。作者引入了<strong>Hierarchical decomposition</strong>。因为不同类的单词以及上下文进行预测时满足:</p>
+<p>$P(Y=y|X=x)=P(Y=y|C=c(y), X)P(C=c(y)|X=x)$（c为cluster）</p>
+<p>易证明有$P(Y|X)= \sum _i P(Y, C=i|X)=\sum _i P(Y|C=i, X)P(C=i|X)=P(Y|C=c(Y), X)P(C=c(Y)|C)$，这是因为上文单词X，下文只会与某个cluster中的Y有上下文关系。</p>
+<p>通过对单词与层级聚类进行一个bit vector编码，对于v有$(b _1 (v),…, b _m (v))$，如果$b _1 (v)=1$表明单词v属于第一层的左子树，如果$b _2 (v)=0$则表明v属于第二层右子树(假设左子树为1)。通过这样的表示来构建一个树(如果是一棵平衡树，将会大大的提速)</p>
+<p>这样上下文依赖关系所表达的条件概率：</p>
+<p>$P(v|w _{t-1}, …, w _{t-n+1})=\prod ^m _{j=1}P(b _j(v)|b _1 (v), …, b _{j-1}(v), w _{t-1}, …, w _{t-n+1})$</p>
+<p>模型就变成了计算单词属于哪一类的概率，其中计算一个节点属于哪一类的方式：</p>
+<p>$P(b|node, w _{t-1}, …, w _{t-n+1})=sigmoid(\alpha _{node}+\beta ^{T} tanh(c+Wx+UN _{node}))$</p>
+<p>其中每从树root到node一条路径都共享$N_{node}$向量。最终整个模型预测每个单词的平均长度只有$log|V|$的长度。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Bengio Y, Ducharme R, Vincent P. A neural probabilistic language model[C]//Advances in Neural Information Processing Systems. 2001: 932-938.</li>
+<li>Bengio Y, Ducharme R, Vincent P, et al. A neural probabilistic language model[J]. Journal of machine learning research, 2003, 3(Feb): 1137-1155.</li>
+<li>Bengio Y, Senécal J S. Quick training of probabilistic neural nets by importance sampling[C]//International Workshop on Artificial Intelligence and Statistics. PMLR, 2003: 17-24.</li>
+<li>Hinton G E. Training products of experts by minimizing contrastive divergence[J]. Neural computation, 2002, 14(8): 1771-1800.</li>
+<li>Bengio Y. New distributed probabilistic language models[J]. 2002.</li>
+<li>Gao J, Goodman J T, Miao J. The Use of Clustering Techniques for Asian Language Modeling[J].</li>
+<li>Morin F, Bengio Y. Hierarchical probabilist</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#A-Neural-Probabilistic-Language-Model"><span class="toc-number">1.</span> <span class="toc-text">A Neural Probabilistic Language Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-training-of-probabilistic-neural-nets-by-importance-sampling"><span class="toc-number">2.</span> <span class="toc-text">Quick training of probabilistic neural nets by importance sampling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#New-distributed-probabilistic-language-models"><span class="toc-number">3.</span> <span class="toc-text">New distributed probabilistic language models</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hierarchical-Probabilistic-Neural-Network-Language-Model"><span class="toc-number">4.</span> <span class="toc-text">Hierarchical Probabilistic Neural Network Language Model</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">4.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&text=几篇语言模型论文阅读"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&is_video=false&description=几篇语言模型论文阅读"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=几篇语言模型论文阅读&body=Check out this article: http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&title=几篇语言模型论文阅读"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&name=几篇语言模型论文阅读&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/26/%E5%87%A0%E7%AF%87%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/&t=几篇语言模型论文阅读"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
