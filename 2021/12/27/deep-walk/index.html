@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Deep Walk是一种graph embedding 的方法，通过truncated random walk的方式对graph学习到向量空间中节点的向量表示。首次将deep learning引入节点表示学习，并使用无监督的方式进行学习。 论文中提到Deep Walk主要结合random walk和语言模型，来指导算法学习 random walk 被广泛的应用于内容推荐，社区探测(相似度计算)以及">
+<meta property="og:type" content="article">
+<meta property="og:title" content="deep walk">
+<meta property="og:url" content="http://example.com/2021/12/27/deep-walk/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="Deep Walk是一种graph embedding 的方法，通过truncated random walk的方式对graph学习到向量空间中节点的向量表示。首次将deep learning引入节点表示学习，并使用无监督的方式进行学习。 论文中提到Deep Walk主要结合random walk和语言模型，来指导算法学习 random walk 被广泛的应用于内容推荐，社区探测(相似度计算)以及">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/powerlaw.png">
+<meta property="og:image" content="http://example.com/images/deepwalk.jpg">
+<meta property="article:published_time" content="2021-12-27T13:56:48.000Z">
+<meta property="article:modified_time" content="2021-12-27T14:01:02.178Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="Graph embedding">
+<meta property="article:tag" content="Hierarchical softmax">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/powerlaw.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>deep walk</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/12/26/negative-sampling/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/27/deep-walk/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/27/deep-walk/&text=deep walk"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/27/deep-walk/&is_video=false&description=deep walk"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=deep walk&body=Check out this article: http://example.com/2021/12/27/deep-walk/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/27/deep-walk/&name=deep walk&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/27/deep-walk/&t=deep walk"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#random-walk"><span class="toc-number">1.</span> <span class="toc-text">random walk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Language-model"><span class="toc-number">2.</span> <span class="toc-text">Language model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%82%E5%BE%8B%E5%88%86%E5%B8%83"><span class="toc-number">3.</span> <span class="toc-text">幂律分布</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">Reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        deep walk
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-12-27T13:56:48.000Z" itemprop="datePublished">2021-12-27</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Graph-embedding/" rel="tag">Graph embedding</a>, <a class="tag-link-link" href="/tags/Hierarchical-softmax/" rel="tag">Hierarchical softmax</a>, <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>, <a class="tag-link-link" href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag">论文阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Deep Walk是一种graph embedding 的方法，通过truncated random walk的方式对graph学习到向量空间中节点的向量表示。首次将deep learning引入节点表示学习，并使用无监督的方式进行学习。</p>
+<p>论文中提到Deep Walk主要结合random walk和语言模型，来指导算法学习</p>
+<h2 id="random-walk"><a href="#random-walk" class="headerlink" title="random walk"></a>random walk</h2><p> 被广泛的应用于内容推荐，社区探测(相似度计算)以及output sensitive(以计算<strong>局部</strong>社区结构信息)</p>
+<p>random walk被应用的优势：</p>
+<ol>
+<li>局部的random walk可以被并行化</li>
+<li>局部的短的random walk，可以规避graph在发生修改时，更好的适应。</li>
+</ol>
+<h2 id="Language-model"><a href="#Language-model" class="headerlink" title="Language model"></a>Language model</h2><p>语言模型的目标就是通过已知词语去预测下一个词语，也即，预测一个最大后验概率。论文注意到类似于word2vec的<strong>概率神经网络</strong>去学习词的向量表征。论文则是通过泛化语言模型应用到random walk上，即，</p>
+<p>$P(w_i | w_{i-1}, w_{i-2}, …, w_0) \longrightarrow  P(v_i | v_{i-1}, v_{i-2}, …, v_0)$</p>
+<p>作者不仅仅需要模型学习到节点之间同时发生的分布，而且还要学习潜在的表示（个人理解：考虑到节点之间不同于词与词之间一样带有时序性质。），引入了一个映射函数$\Phi$</p>
+<p>$P(v_i | v_{i-1}, v_{i-2}, …, v_0) \longrightarrow  P(v_i | \Phi(v_{i-1}), \Phi(w_{i-2}), …, \Phi(w_0) $</p>
+<p>同时作者发现语言模型中使用一个单词去预测其上下文(skip-gram模型)，可以很好地应用至节点预测中，消除节点顺序的关系，所以优化目标也可以很好地给出来了，同时作者发现消除顺序可以更好的捕捉节点之间的关系以及加快训练速度</p>
+<p>$ minimize_{\Phi} -log P(v_{i-1}, v_{i-2}, …, v_0 | \Phi(v_i))$</p>
+<p>那么联系这两者的桥梁是谁呢？</p>
+<h2 id="幂律分布"><a href="#幂律分布" class="headerlink" title="幂律分布"></a>幂律分布</h2><p>作者发现short random walk和语言模型一样具有相同的幂律分布。</p>
+<p><img src="/images/powerlaw.png"></p>
+<p>算法流程：</p>
+<p><strong>Algorithm 1</strong> DeepWalk$(G, w, d, \gamma, t)$</p>
+<p><strong>Input</strong> : graph$G(V, E)$</p>
+<p>​    window size $w$</p>
+<p>​    embedding size $d$</p>
+<p>​    walks per vertex $\gamma$</p>
+<p>​    walk length $t$</p>
+<p><strong>Output</strong>: matrix of vertex representations $\Phi \in R^{|V| \times d}$</p>
+<p>1: initialization: Sample $\Phi$ from $\mu^{|V| \times d}$</p>
+<p>2: build a binary Tree T from V</p>
+<p>3: for $i=0$ to $\gamma$ do</p>
+<p>4:    $O=Shuffle(V)$</p>
+<p>5:    for each $v_i \in O$ do</p>
+<p>6:        $W_{v_i}=RandomWalk(G, v_i, t)$</p>
+<p>7:        $SkipGram(\Phi, W_{v_i}, w)$</p>
+<p>8:    end for</p>
+<p>9: end for</p>
+<p>算法思想比较简单，就是先使用均匀分布采样root节点，然后用均匀分布取采样后续节点，  然后对节点进行embedding，也即$\Phi$，然后使用word2vec中的skip-gram模型一样进行训练。由于模型涉及的计算量比较大，所以作者使用了word2vec中用的<strong>hierarchical-softmax</strong>进行加速。可以看到在算法第二步构建了一个二分树。</p>
+<p><strong>Algorithm 2</strong> $SkipGram(\Phi, W_{v_i}, w)$</p>
+<p>1: for each $v_j \in W_{v_i}$ do</p>
+<p>2:        for each $u_k \in W_{v_i} [j-w : j + w]$</p>
+<p>3:            $J(\Phi) = -logPr(u_k | \Phi(v_j))$</p>
+<p>4：         $\Phi=\Phi- \alpha \frac{\partial J}{\partial \Phi}$</p>
+<p>5:        end for</p>
+<p>6: end for</p>
+<p><img src="/images/deepwalk.jpg"></p>
+<h4 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h4><ol>
+<li>Perozzi B, Al-Rfou R, Skiena S. Deepwalk: Online learning of social representations[C]//Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining. 2014: 701-710.</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#random-walk"><span class="toc-number">1.</span> <span class="toc-text">random walk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Language-model"><span class="toc-number">2.</span> <span class="toc-text">Language model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%82%E5%BE%8B%E5%88%86%E5%B8%83"><span class="toc-number">3.</span> <span class="toc-text">幂律分布</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">Reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/12/27/deep-walk/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/12/27/deep-walk/&text=deep walk"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/12/27/deep-walk/&is_video=false&description=deep walk"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=deep walk&body=Check out this article: http://example.com/2021/12/27/deep-walk/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/12/27/deep-walk/&title=deep walk"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/12/27/deep-walk/&name=deep walk&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/12/27/deep-walk/&t=deep walk"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2021
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
