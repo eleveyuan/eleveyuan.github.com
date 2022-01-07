@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="动态时间规整是用来衡量两个序列之间相似度的算法。 现实情况下，DTW最初用于识别语音的相似性。我们用数字表示音调高低，例如某个单词发音的音调为1-3-2-4。现在有两个人说这个单词，一个人在前半部分拖长，其发音为1-1-3-3-2-4；另一个人在后半部分拖长，其发音为1-3-2-2-4-4(reference 2)。 为了计算上述两个序列的相似度，我们就可以首先考虑一一对应进行匹配计算，由于两个序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dynamic Time Warping(动态时间规整)">
+<meta property="og:url" content="http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="动态时间规整是用来衡量两个序列之间相似度的算法。 现实情况下，DTW最初用于识别语音的相似性。我们用数字表示音调高低，例如某个单词发音的音调为1-3-2-4。现在有两个人说这个单词，一个人在前半部分拖长，其发音为1-1-3-3-2-4；另一个人在后半部分拖长，其发音为1-3-2-2-4-4(reference 2)。 为了计算上述两个序列的相似度，我们就可以首先考虑一一对应进行匹配计算，由于两个序">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-07T15:40:01.000Z">
+<meta property="article:modified_time" content="2022-01-07T15:41:48.023Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="动态规划">
+<meta property="article:tag" content="c&#x2F;c++">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Dynamic Time Warping(动态时间规整)</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/05/%E8%AE%BA%E6%96%87struc2vec/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&text=Dynamic Time Warping(动态时间规整)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&is_video=false&description=Dynamic Time Warping(动态时间规整)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Dynamic Time Warping(动态时间规整)&body=Check out this article: http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&name=Dynamic Time Warping(动态时间规整)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&t=Dynamic Time Warping(动态时间规整)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Dynamic Time Warping(动态时间规整)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-07T15:40:01.000Z" itemprop="datePublished">2022-01-07</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/c-c/" rel="tag">c/c++</a>, <a class="tag-link-link" href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" rel="tag">动态规划</a>, <a class="tag-link-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p><strong>动态时间规整</strong>是用来衡量两个序列之间相似度的算法。</p>
+<p>现实情况下，DTW最初用于识别语音的相似性。我们用数字表示音调高低，例如某个单词发音的音调为1-3-2-4。现在有两个人说这个单词，一个人在前半部分拖长，其发音为1-1-3-3-2-4；另一个人在后半部分拖长，其发音为1-3-2-2-4-4(reference 2)。</p>
+<p>为了计算上述两个序列的相似度，我们就可以首先考虑一一对应进行匹配计算，由于两个序列一一对应但是音调不一样，会有较大的差异。</p>
+<p>换一种方式，不考虑序列时间上的对应性<strong>，因为序列中有些音被拖长了，我们可以用一个序列的音调去</strong>贪心**的匹配另外一个序列被拖长的音(有点类似KMP算法)。</p>
+<p>DTW几个特点(reference 1)：</p>
+<ol>
+<li>第一个序列中的每个索引都必须与另一个序列中的一个或多个索引匹配，反之亦然</li>
+<li> 第一个序列的第一个索引必须与另一个序列的第一个索引匹配（但它不必是唯一匹配） </li>
+<li>第一个序列的最后一个索引必须与另一个序列的最后一个索引匹配（但它不必是唯一匹配） </li>
+<li>从第一个序列的索引到另一个序列的索引的映射必须是单调递增的，反之亦然，即对于第一个序列索引$i$与第二个序列索引$j, j+1$匹配，则不存在$j$与$i+1$匹配(不存在两个序列匹配出现交叉的情况)</li>
+</ol>
+<p>DTW是衡量两个序列之间相似度，也即两个序列的距离度量越小，就越相似。</p>
+<p>DTW问题就是：</p>
+<p>两个序列当前索引下数据的距离，加上已匹配的部分的最小距离，已匹配的部分有三中可能</p>
+<p>a. 第一个序列匹配到$x _i$,第二个序列匹配到$y _{j-1}$，总距离为$D(x _i, y _{j-1})$</p>
+<p>b. 第一个序列匹配到$x _{i-1}$, 第二个序列匹配到$y _i$，总距离为$D(x _{i-1}, y _j)$</p>
+<p>c. 第一个序列匹配到$x _{i-1}$, 第二个序列匹配到$y _{j-1}$, 总距离为$D(x _{i-1}, y _{j-1})$ </p>
+<p>所以此时匹配距离要取三种情况中最小的距离。</p>
+<p>$D(x _i, y _j) = w(i, j) + min(D(x _i, y _{j-1}), D(x _{i-1}, y _j), D(x _{i-1}, y _{j-1}))$</p>
+<p>到这一步，应该不难看出这是一个可以用<strong>动态规划</strong>进行求解的问题了。</p>
+<p><strong>dtw.h</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _dtw_h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _dtw_h</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DTW</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> DTWVERYBIG = <span class="number">100000000.0</span>;</span><br><span class="line">    <span class="keyword">int</span> path_len;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">DTW</span>() &#123;&#125;;</span><br><span class="line">    ~<span class="built_in">DTW</span>() &#123;&#125;;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * calculate dtw distance for two sequences</span></span><br><span class="line"><span class="comment">     * x, y: sequences</span></span><br><span class="line"><span class="comment">     * x_size, y_size: length of sequences</span></span><br><span class="line"><span class="comment">     * win_size: length of window</span></span><br><span class="line"><span class="comment">     */</span> </span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">dtw_dist</span><span class="params">(<span class="keyword">double</span>* x, <span class="keyword">double</span>* y, <span class="keyword">int</span> x_size, <span class="keyword">int</span> y_size, <span class="keyword">int</span> win_size)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * show the sequence after dynamic time warping</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span>** <span class="title">dtw_path</span><span class="params">(<span class="keyword">double</span>* x, <span class="keyword">double</span>* y, <span class="keyword">int</span> x_size, <span class="keyword">int</span> y_size, <span class="keyword">int</span> win_size)</span></span>; </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">docstring</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;This is a class about Dynamic Time Warping.\n&quot;</span></span><br><span class="line">            &lt;&lt; <span class="string">&quot;Please provide these parameters: \n&quot;</span></span><br><span class="line">            &lt;&lt; <span class="string">&quot;x, y           : two sequences needs to compare\n&quot;</span></span><br><span class="line">            &lt;&lt; <span class="string">&quot;x_size, y_size : length of sequence\n&quot;</span></span><br><span class="line">            &lt;&lt; <span class="string">&quot;win_size       : size of window&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p><strong>dtw.cpp</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;dtw.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">DTW::dtw_dist</span><span class="params">(<span class="keyword">double</span>* x, <span class="keyword">double</span>* y, <span class="keyword">int</span> x_size, <span class="keyword">int</span> y_size, <span class="keyword">int</span> win_size)</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;start to calculating dtw distance...&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    <span class="keyword">double</span> dist, min;</span><br><span class="line">    <span class="keyword">int</span> min_idx, max_idx;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// store distance of elements of two sequences</span></span><br><span class="line">    <span class="comment">// Setting the matrix length plus 1 is to reserve space to store the results,</span></span><br><span class="line">    <span class="comment">// and you can also reduce the space usage by modifying the index</span></span><br><span class="line">    <span class="keyword">double</span> **dists = (<span class="keyword">double</span>**)<span class="built_in">malloc</span>((x_size+<span class="number">1</span>) * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">double</span> *));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size+<span class="number">1</span>; i ++)</span><br><span class="line">        dists[i] = (<span class="keyword">double</span>*)<span class="built_in">malloc</span>((y_size+<span class="number">1</span>) * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">double</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size+<span class="number">1</span>; i ++)</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; y_size+<span class="number">1</span>; j ++)</span><br><span class="line">            dists[i][j] = DTWVERYBIG;</span><br><span class="line">    dists[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">0.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// dynamic programming</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size; i ++) &#123;</span><br><span class="line">        min_idx = i - win_size;</span><br><span class="line">        <span class="keyword">if</span>(min_idx &lt; <span class="number">0</span>)</span><br><span class="line">            min_idx = <span class="number">0</span>;</span><br><span class="line">        max_idx = i + win_size;</span><br><span class="line">        <span class="keyword">if</span>(max_idx &gt; y_size)</span><br><span class="line">            max_idx = y_size;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = min_idx; j &lt; max_idx; j ++) &#123;</span><br><span class="line">            dist = <span class="built_in">fabs</span>(x[i] - y[j]);</span><br><span class="line">            min = dists[i][j];</span><br><span class="line">            <span class="keyword">if</span> (min &gt; dists[i][j+<span class="number">1</span>])</span><br><span class="line">                min = dists[i][j+<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (min &gt; dists[i+<span class="number">1</span>][j])</span><br><span class="line">                min = dists[i+<span class="number">1</span>][j];</span><br><span class="line">            dists[i+<span class="number">1</span>][j+<span class="number">1</span>] = dist + min;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dist = dists[x_size][y_size];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size + <span class="number">1</span>; ++i)</span><br><span class="line">        <span class="built_in">free</span>(dists[i]);</span><br><span class="line">    <span class="built_in">free</span>(dists);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span>** <span class="title">DTW::dtw_path</span><span class="params">(<span class="keyword">double</span>* x, <span class="keyword">double</span>* y, <span class="keyword">int</span> x_size, <span class="keyword">int</span> y_size, <span class="keyword">int</span> win_size)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">double</span> dist, min;</span><br><span class="line">    <span class="keyword">int</span> min_idx, max_idx;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// store distance of elements of two sequences</span></span><br><span class="line">    <span class="keyword">double</span> **dists = (<span class="keyword">double</span>**)<span class="built_in">malloc</span>((x_size+<span class="number">1</span>) * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">double</span> *));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size+<span class="number">1</span>; i ++)</span><br><span class="line">        dists[i] = (<span class="keyword">double</span>*)<span class="built_in">malloc</span>((y_size+<span class="number">1</span>) * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">double</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size+<span class="number">1</span>; i ++)</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; y_size+<span class="number">1</span>; j ++)</span><br><span class="line">            dists[i][j] = DTWVERYBIG;</span><br><span class="line">    dists[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">0.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// dynamic programming</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x_size; i ++) &#123;</span><br><span class="line">        min_idx = i - win_size;</span><br><span class="line">        <span class="keyword">if</span>(min_idx &lt; <span class="number">0</span>)</span><br><span class="line">            min_idx = <span class="number">0</span>;</span><br><span class="line">        max_idx = i + win_size;</span><br><span class="line">        <span class="keyword">if</span>(max_idx &gt; y_size)</span><br><span class="line">            max_idx = y_size;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = min_idx; j &lt; max_idx; j ++) &#123;</span><br><span class="line">            dist = <span class="built_in">fabs</span>(x[i] - y[j]);</span><br><span class="line">            min = dists[i][j];</span><br><span class="line">            <span class="keyword">if</span> (min &gt; dists[i][j+<span class="number">1</span>])</span><br><span class="line">                min = dists[i][j+<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (min &gt; dists[i+<span class="number">1</span>][j])</span><br><span class="line">                min = dists[i+<span class="number">1</span>][j];</span><br><span class="line">            dists[i+<span class="number">1</span>][j+<span class="number">1</span>] = dist + min;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    path_len = x_size &gt; y_size ? x_size+<span class="number">2</span> : y_size+<span class="number">2</span>;</span><br><span class="line">    <span class="keyword">int</span>** path = (<span class="keyword">int</span>**)<span class="built_in">malloc</span>(<span class="number">2</span> * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">int</span>*));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i ++) &#123;</span><br><span class="line">        path[i] = (<span class="keyword">int</span>*)<span class="built_in">malloc</span>(path_len * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">int</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> i = x_size;</span><br><span class="line">    <span class="keyword">int</span> j = y_size;</span><br><span class="line">    path[<span class="number">0</span>][<span class="number">0</span>] = x_size - <span class="number">1</span>;</span><br><span class="line">    path[<span class="number">1</span>][<span class="number">0</span>] = y_size - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">1</span>;  <span class="comment">// index</span></span><br><span class="line">    <span class="keyword">while</span>(i &gt; <span class="number">1</span> || j &gt; <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(i == <span class="number">1</span>) &#123;</span><br><span class="line">            --j;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(j == <span class="number">1</span>) &#123;</span><br><span class="line">            --i;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            min = dists[i - <span class="number">1</span>][j - <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span>(dists[i - <span class="number">1</span>][j] &lt; min)</span><br><span class="line">                min = dists[i - <span class="number">1</span>][j];</span><br><span class="line">            <span class="keyword">if</span>(dists[i][j - <span class="number">1</span>] &lt; min)</span><br><span class="line">                min = dists[i][j - <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(dists[i - <span class="number">1</span>][j - <span class="number">1</span>] == min) &#123;</span><br><span class="line">                --i;</span><br><span class="line">                --j;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(dists[i - <span class="number">1</span>][j] == min) &#123;</span><br><span class="line">                --i;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                --j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        path[<span class="number">0</span>][k] = i - <span class="number">1</span>;</span><br><span class="line">        path[<span class="number">1</span>][k] = j - <span class="number">1</span>;</span><br><span class="line">        ++k;</span><br><span class="line">    &#125;</span><br><span class="line">    path[<span class="number">0</span>][k] = <span class="number">0</span>;</span><br><span class="line">    path[<span class="number">1</span>][k] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> path;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>test.cpp</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;dtw.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    DTW dtw;</span><br><span class="line">    dtw.<span class="built_in">docstring</span>();</span><br><span class="line">    <span class="keyword">double</span> a[] = &#123;<span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">4</span>&#125;;</span><br><span class="line">    <span class="keyword">double</span> b[] = &#123;<span class="number">1</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; dtw.<span class="built_in">dtw_dist</span>(a, b, <span class="number">6</span>, <span class="number">6</span>, <span class="number">2</span>) &lt;&lt; std::endl;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span>** c = dtw.<span class="built_in">dtw_path</span>(a, b, <span class="number">6</span>, <span class="number">6</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i ++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; dtw.path_len; j ++) </span><br><span class="line">            std::cout &lt;&lt; c[i][j]+<span class="number">1</span> &lt;&lt; <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">        std::cout &lt;&lt; std::endl;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dynamic_time_warping#cite_note-16">https://en.wikipedia.org/wiki/Dynamic_time_warping#cite_note-16</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/43247215">https://zhuanlan.zhihu.com/p/43247215</a></li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">1.</span> <span class="toc-text">reference</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&text=Dynamic Time Warping(动态时间规整)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&is_video=false&description=Dynamic Time Warping(动态时间规整)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Dynamic Time Warping(动态时间规整)&body=Check out this article: http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&title=Dynamic Time Warping(动态时间规整)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&name=Dynamic Time Warping(动态时间规整)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/07/Dynamic-Time-Warping-%E5%8A%A8%E6%80%81%E6%97%B6%E9%97%B4%E8%A7%84%E6%95%B4/&t=Dynamic Time Warping(动态时间规整)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
