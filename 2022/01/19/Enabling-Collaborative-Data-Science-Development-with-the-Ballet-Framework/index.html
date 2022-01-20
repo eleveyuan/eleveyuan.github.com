@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="这篇论文是主要如何使特征工程框架化，最近一直在弄特征工程，团队三个人，感觉分离感太强，各做各的。本人大学期间前端后端都稍微写过，接触过thinkphp、django、vue这些优秀框架，因为与业务分离的“引擎”代码具有高度抽象性，可通过设计模式(MVC&#x2F;MTV&#x2F;MVVM)构成框架。对于特征工程大部分依赖于业务数据，与业务耦合较重，但是特征工程又具有一定的模式，所以现在在开发时总令自己烦恼，在开发时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Enabling Collaborative Data Science Development with the Ballet Framework">
+<meta property="og:url" content="http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="这篇论文是主要如何使特征工程框架化，最近一直在弄特征工程，团队三个人，感觉分离感太强，各做各的。本人大学期间前端后端都稍微写过，接触过thinkphp、django、vue这些优秀框架，因为与业务分离的“引擎”代码具有高度抽象性，可通过设计模式(MVC&#x2F;MTV&#x2F;MVVM)构成框架。对于特征工程大部分依赖于业务数据，与业务耦合较重，但是特征工程又具有一定的模式，所以现在在开发时总令自己烦恼，在开发时">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/ballet_intro.png">
+<meta property="og:image" content="http://example.com/images/feat_pipe.png">
+<meta property="article:published_time" content="2022-01-19T12:54:04.000Z">
+<meta property="article:modified_time" content="2022-01-20T11:09:00.435Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="数据挖掘">
+<meta property="article:tag" content="论文阅读">
+<meta property="article:tag" content="feature engineering">
+<meta property="article:tag" content="ballet框架">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ballet_intro.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Enabling Collaborative Data Science Development with the Ballet Framework</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/16/MapReduce-Design-Patterns-applications/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&text=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&is_video=false&description=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Enabling Collaborative Data Science Development with the Ballet Framework&body=Check out this article: http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&name=Enabling Collaborative Data Science Development with the Ballet Framework&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&t=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#abstract"><span class="toc-number">1.</span> <span class="toc-text">abstract</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#introduction"><span class="toc-number">2.</span> <span class="toc-text">introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#background-and-related-work"><span class="toc-number">3.</span> <span class="toc-text">background and related work</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#conceptual-framework"><span class="toc-number">4.</span> <span class="toc-text">conceptual framework</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#an-overview-of-ballet"><span class="toc-number">5.</span> <span class="toc-text">an overview of ballet</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#collaborative-feature-engineering"><span class="toc-number">6.</span> <span class="toc-text">collaborative feature engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#feature-definitions"><span class="toc-number">6.1.</span> <span class="toc-text">feature definitions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feature-engineering-pipelines"><span class="toc-number">6.2.</span> <span class="toc-text">feature engineering pipelines</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#acceptance-procedures-for-feature-definitions"><span class="toc-number">6.3.</span> <span class="toc-text">acceptance procedures for feature definitions</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#user-studies"><span class="toc-number">7.</span> <span class="toc-text">user studies</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">7.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Enabling Collaborative Data Science Development with the Ballet Framework
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-19T12:54:04.000Z" itemprop="datePublished">2022-01-19</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">论文阅读</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/ballet%E6%A1%86%E6%9E%B6/" rel="tag">ballet框架</a>, <a class="tag-link-link" href="/tags/feature-engineering/" rel="tag">feature engineering</a>, <a class="tag-link-link" href="/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/" rel="tag">数据挖掘</a>, <a class="tag-link-link" href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" rel="tag">论文阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>这篇论文是主要如何使特征工程框架化，最近一直在弄特征工程，团队三个人，感觉分离感太强，各做各的。本人大学期间前端后端都稍微写过，接触过thinkphp、django、vue这些优秀框架，因为与业务分离的“引擎”代码具有高度抽象性，可通过设计模式(MVC/MTV/MVVM)构成框架。对于特征工程大部分依赖于业务数据，与业务耦合较重，但是特征工程又具有一定的模式，所以现在在开发时总令自己烦恼，在开发时在迭代代码时总需要考虑代码复用/抽象。所以在github上搜了下feature engineering framework就找到了ballet这个轻量级框架，这个框架依赖于这篇论文(<strong>MIT出品</strong>)。</p>
+<p><strong>同时这篇论文展现了一个软件设计开发问题提出、吸收前人工作、案例分析的良好案例。最重要是设计出来学习成本的问题，以及后续优化改进的问题。</strong></p>
+<h2 id="abstract"><a href="#abstract" class="headerlink" title="abstract"></a>abstract</h2><p>摘要部分，讨论的是开源系统已经存在大量为协同工作而生的软件系统框架，由于搞数据科学通常团队是个人或几个人，作者为了提高协作性(collaborations)提出了一个概念性的框架，并且进行了实现，使用ballet框架，协作者会逐步地向一个repository提出feature definitions，每个repository都要经过software和ML性能验证，并可以自动合并到一个可执行的特性工程pipeline中。</p>
+<h2 id="introduction"><a href="#introduction" class="headerlink" title="introduction"></a>introduction</h2><p>数据科学项目不同如软件框架开发输出的是一个软件，而是一个模型。本节提出了<strong>数据科学项目是否可以通过应用成功的开源开发模型来支持更多协作者开发预测建模项目？</strong>论文把数据科学过程中的步骤分解为模块化，如下所示：</p>
+<p><img src="/images/ballet_intro.png"></p>
+<p>(个人十分认同这种思想的，因为我在处理特征时也写了一个类用于注册特征处理函数，然后再用pandas的pipeline功能进行处理)</p>
+<p>该节同时提及了后文如何去对框架设计进行<strong>case study</strong>(mixed-method software engineering case study approach)，以及为后续数据科学框架提出了<strong>思考方向</strong>：目标清晰度、实例学习、工作分配以及开发人员友好的工作流(goal clarity, learning by example, distribution of work, and developer-friendly workflows)</p>
+<h2 id="background-and-related-work"><a href="#background-and-related-work" class="headerlink" title="background and related work"></a>background and related work</h2><p>特征工程涉及到许多阶段，包含许多步骤(Preparation, Modeling, and Deployment and encompass other smaller steps such as data cleaning and labeling, feature engineering, model development, monitoring, and analyzing bias.)，通常数据科学家都是一个人写一整套代码，但是三个臭皮匠顶过诸葛亮这个道理在数据科学领域一样适用。也有众多工作在探索协作的可能，但是现在涉及都是一些数据科学的前期工作(例如众包，同步编辑)。</p>
+<p>从开源领域可以看到pull-request模式的发展，使得“集广智”成为可能，获得了成功。</p>
+<h2 id="conceptual-framework"><a href="#conceptual-framework" class="headerlink" title="conceptual framework"></a>conceptual framework</h2><p>如何将(large-scale)pull-request的协作模式应用至数据科学开发项目中？依次作者提出了四个challenges 以及四个concepts</p>
+<p><font color=blue>challenges</font>:</p>
+<ol>
+<li>task management任务管理</li>
+<li>tool mismatch数据科学开发人员很少使用版本控制工具</li>
+<li>evaluating contributions对贡献的特征进行贡献度评估</li>
+<li>maintaining infrastructure对于数据与计算的管理</li>
+</ol>
+<p><font color=blue>design concepts</font>:</p>
+<ol>
+<li>data science patches数据处理的模块化</li>
+<li>data science products in open-source workflows为协作开发设计的工作流</li>
+<li>software and statistical acceptance procedures对提交的patch进行性能评估</li>
+<li>decentralized development利用个人本地机器进行存储以及计算，而不是像后端那样有个hub的概念</li>
+</ol>
+<p>在以上的挑战以及概念，论文设计出来的框架需要使用着的任务满足以下条件：</p>
+<p>a.  products可以分解为多个patch</p>
+<p>b.  性能评估是定义在patch粒度级别的</p>
+<p>c.  为了满足交互性，数据大小以及性能评估时间不能过长</p>
+<h2 id="an-overview-of-ballet"><a href="#an-overview-of-ballet" class="headerlink" title="an overview of ballet"></a>an overview of ballet</h2><p>根据设计的概念性框架，论文实现了一个名为ballet的框架，框架主要从三个用户角色进行展示</p>
+<ol>
+<li><strong>maintainer</strong>项目的维护者/管理者，这个角色就像是监考老师分发考卷，通过ballet框架的设计，数据patch设计决绝C1/D1(C与D表示上述提到的challenge与design concept)， 数据开发pipeline解决C2/D2，通过acceptance procedures解决C3/D3，通过版本控制工具解决C4/D4。(当然版本控制工具是这一切实现的核心。毕竟使用的是pull-request模式)</li>
+<li><strong>collaborators</strong>项目协作者/开发者，角色就是答卷人(想到一句话：时代是出卷人，我们是答卷人，人民是阅卷人)，collaborators进行patch的开发与贡献</li>
+<li><strong>consumer</strong>项目的消费者，角色就像是复盘考卷的人，从中进行学习/复用经验。</li>
+</ol>
+<h2 id="collaborative-feature-engineering"><a href="#collaborative-feature-engineering" class="headerlink" title="collaborative feature engineering"></a>collaborative feature engineering</h2><h3 id="feature-definitions"><a href="#feature-definitions" class="headerlink" title="feature definitions"></a>feature definitions</h3><p>特征定义是一段从原始数据提取特征值的过程的代码，其中提取操作为特征函数，进行原始值与特征值的map</p>
+<h3 id="feature-engineering-pipelines"><a href="#feature-engineering-pipelines" class="headerlink" title="feature engineering pipelines"></a>feature engineering pipelines</h3><p>如下图所示</p>
+<p><img src="/images/feat_pipe.png"></p>
+<h3 id="acceptance-procedures-for-feature-definitions"><a href="#acceptance-procedures-for-feature-definitions" class="headerlink" title="acceptance procedures for feature definitions"></a>acceptance procedures for feature definitions</h3><p>并不是所有提交的代码是有贡献的，所以需要进行评估</p>
+<ol>
+<li>feature api validation：首先提交的代码需要实现Feature接口，将特征函数拟合到一个孤立环境中的一个单独的下采样训练数据集，并从下采样训练和验证数据集中提取特征值，任何实现错误都立即失败。然后进行了一系列的15次测试，以增加特征函数也能在看不见的输入上提取可接受的特征值的信心。每个测试都配有“建议”，可以反馈给用户来解决任何问题。</li>
+<li>ML performance validation: 接受程序的一个补充方面是<strong>验证特征贡献对机器学习性能的影响</strong>，作者将其视为<strong>a streaming feature definition selection(SFDS)问题</strong>。这是一个variant of streaming feature selection，从<strong>特征定义</strong>而不是<strong>特征值</strong>中进行选择。提高ML性能的功能将通过此步骤；否则，该贡献将被拒绝。这不仅阻碍了低质量的贡献，而且它为合作者提供了一种评估他们的表现的方法，激励了更多的深思熟虑和创造性的特性工程。</li>
+</ol>
+<h2 id="user-studies"><a href="#user-studies" class="headerlink" title="user studies"></a>user studies</h2><p>这部分是作者的框架设计出来，具体进行用户使用的案例分析，具体可以看论文。</p>
+<p>这里给了我一个范例的启示：</p>
+<ol>
+<li>在软件设计出来时，需要实际使用进行评判，而不是直接大而全，数据科学家偏爱jupyter的交互，由此框架根据实际进行了实现。</li>
+<li>在案例分析之前，需要有预期的提问自己的框架是否在使用时满足<strong>需求</strong>，以及既定的<strong>目标</strong>。</li>
+<li>如何选取实验对象(snowball sampling)</li>
+</ol>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Smith M J, Cito J, Lu K, et al. Enabling collaborative data science development with the Ballet framework[J]. Proceedings of the ACM on Human-Computer Interaction, 2021, 5(CSCW2): 1-39.</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#abstract"><span class="toc-number">1.</span> <span class="toc-text">abstract</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#introduction"><span class="toc-number">2.</span> <span class="toc-text">introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#background-and-related-work"><span class="toc-number">3.</span> <span class="toc-text">background and related work</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#conceptual-framework"><span class="toc-number">4.</span> <span class="toc-text">conceptual framework</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#an-overview-of-ballet"><span class="toc-number">5.</span> <span class="toc-text">an overview of ballet</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#collaborative-feature-engineering"><span class="toc-number">6.</span> <span class="toc-text">collaborative feature engineering</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#feature-definitions"><span class="toc-number">6.1.</span> <span class="toc-text">feature definitions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#feature-engineering-pipelines"><span class="toc-number">6.2.</span> <span class="toc-text">feature engineering pipelines</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#acceptance-procedures-for-feature-definitions"><span class="toc-number">6.3.</span> <span class="toc-text">acceptance procedures for feature definitions</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#user-studies"><span class="toc-number">7.</span> <span class="toc-text">user studies</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">7.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&text=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&is_video=false&description=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Enabling Collaborative Data Science Development with the Ballet Framework&body=Check out this article: http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&title=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&name=Enabling Collaborative Data Science Development with the Ballet Framework&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/&t=Enabling Collaborative Data Science Development with the Ballet Framework"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

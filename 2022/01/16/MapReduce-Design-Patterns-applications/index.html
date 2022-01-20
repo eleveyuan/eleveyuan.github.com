@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Summarization analytics是关于将类似的数据分组在一起，然后执行一个操作，如计算一个统计数据、构建一个索引，或只是简单地计数。 numerical summarizationsnumerical summarizations patterns 是计算数据上的汇总统计值的一般模式。通过一个关键字段将记录组合在一起，并计算每个组的数字聚合，以获得大数据集的顶层视图。 考虑$\the">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MapReduce Design Patterns(applications)">
+<meta property="og:url" content="http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="Summarization analytics是关于将类似的数据分组在一起，然后执行一个操作，如计算一个统计数据、构建一个索引，或只是简单地计数。 numerical summarizationsnumerical summarizations patterns 是计算数据上的汇总统计值的一般模式。通过一个关键字段将记录组合在一起，并计算每个组的数字聚合，以获得大数据集的顶层视图。 考虑$\the">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-16T08:09:13.000Z">
+<meta property="article:modified_time" content="2022-01-20T11:10:40.132Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="MapReduce">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>MapReduce Design Patterns(applications)</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/16/%E9%81%87%E5%88%B0%E7%9A%84bug/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&text=MapReduce Design Patterns(applications)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&is_video=false&description=MapReduce Design Patterns(applications)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MapReduce Design Patterns(applications)&body=Check out this article: http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&name=MapReduce Design Patterns(applications)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&t=MapReduce Design Patterns(applications)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#numerical-summarizations"><span class="toc-number">1.</span> <span class="toc-text">numerical summarizations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Minimum-maximum-and-count-example"><span class="toc-number">1.1.</span> <span class="toc-text">Minimum, maximum, and count example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Average-example"><span class="toc-number">1.2.</span> <span class="toc-text">Average example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Median-and-standard-deviation"><span class="toc-number">1.3.</span> <span class="toc-text">Median and standard deviation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#inverted-index"><span class="toc-number">2.</span> <span class="toc-text">inverted index</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Inverted-Index-Example-%E2%80%93Wikipedia-reference-inverted-index"><span class="toc-number">2.1.</span> <span class="toc-text">Inverted Index Example –Wikipedia reference inverted index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Counting-with-Counters"><span class="toc-number">3.</span> <span class="toc-text">Counting with Counters</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        MapReduce Design Patterns(applications)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-16T08:09:13.000Z" itemprop="datePublished">2022-01-16</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/MapReduce/" rel="tag">MapReduce</a>, <a class="tag-link-link" href="/tags/java/" rel="tag">java</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Summarization analytics是关于将类似的数据分组在一起，然后执行一个操作，如计算一个统计数据、构建一个索引，或只是简单地计数。</p>
+<h2 id="numerical-summarizations"><a href="#numerical-summarizations" class="headerlink" title="numerical summarizations"></a>numerical summarizations</h2><p>numerical summarizations patterns 是计算数据上的汇总统计值的一般模式。通过一个关键字段将记录组合在一起，并计算每个组的数字聚合，以获得大数据集的顶层视图。</p>
+<p>考虑$\theta$是一个通用的numerical summarizations函数，我们希望在一些值列表$(v _1, v _2,v _3, …, v _n)$上执行，以找到一个值$\lambda$，即$\lambda=\theta(v _1, v _2,v _3, …, v _n)$。$\theta$的例子包括最小值、最大值、平均值、中值和标准差。</p>
+<p>如果函数$\theta$是一个<strong>关联操作和交换操作</strong>(associative and commutative)，那么它可以进行combiner(即，map端聚合)的。也就是说，<strong>如果可以任意地改变值的顺序，并且可以任意地将计算进行分组，则可以在这里使用组合器。</strong></p>
+<p>这种模式常见的应用：</p>
+<ol>
+<li>Word count</li>
+<li>Record count</li>
+<li>Min/Max/Count</li>
+<li>Average/Median/Standard deviation</li>
+</ol>
+<h3 id="Minimum-maximum-and-count-example"><a href="#Minimum-maximum-and-count-example" class="headerlink" title="Minimum, maximum, and count example"></a>Minimum, maximum, and count example</h3><p><strong>例如</strong>： 给定用户的评论列表，确定用户第一次和最后一次评论，以及该用户的评论总数。</p>
+<p>这些操作是associative and commutative的，可以很好的进行map、combiner、reudce，同时combiner与reudce操作相同。</p>
+<h3 id="Average-example"><a href="#Average-example" class="headerlink" title="Average example"></a>Average example</h3><p>求平均值不是一个associative运算。</p>
+<p><strong>例如</strong>：给定用户评论列表，确定每小时的平均评论长度。</p>
+<p>为了能够进行combiner，考虑下我们在combiner时需要进行求平均，导致后续reduce求平均的结果不对，所以可以考虑加入数据条数count，然后combiner端求平均avg，同时将条数传入reduce，就可以加和count*avg，除以加和count，求出总avg了。为了满足这一条件，在map是需要一个key对应value为(1, comment length)，其中1表是一条数据为了combiner阶段聚合数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// map求平均核心代码</span></span><br><span class="line"><span class="comment">// get the comment length</span></span><br><span class="line">outCountAverage.setCount(<span class="number">1</span>);</span><br><span class="line">outCountAverage.setAverage(text.length());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// reduce求平均核心代码</span></span><br><span class="line"><span class="comment">// Iterate through all input values for this key</span></span><br><span class="line"><span class="keyword">for</span> (CountAverageTuple val : values) &#123;</span><br><span class="line">    sum += val.getCount() * val.getAverage();</span><br><span class="line">    count += val.getCount();</span><br><span class="line">&#125;</span><br><span class="line">result.setCount(count);</span><br><span class="line">result.setAverage(sum / count);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Median-and-standard-deviation"><a href="#Median-and-standard-deviation" class="headerlink" title="Median and standard deviation"></a>Median and standard deviation</h3><p>中位数和标准差都是非associative的操作。且要求全部数据，而MapReduce需要进行shuffle。数据还必须进行排序，因为MapReduce不会对value进行排序。</p>
+<p><strong>例如</strong>：给定用户的评论列表，确定每天每小时评论长度的中位数和标准差。</p>
+<p><strong>最简单方法</strong>是将值列表复制到一个临时列表中(这个列表会放在内存中)，以便找到中值或再次迭代集合以确定标准差。对于大型数据集，此实现可能会导致<strong>Java堆空间问题</strong>，因为每个值都会被复制到每个输入组的内存中。在这种情况下无法进行combiner。</p>
+<p>为了减少内存，可以考虑前面的平均值的例子，我们需要引入计数“1”，此外由于median需要进行排序，引入一个sortmap进行存储，结构：(1-&gt;4, 2-&gt;2),箭头前为评论长度值，后面为评论条数。这样在计算median时根据长度len排序，获取count条数进行加和，以及len*count加和，后续即可计算出相应的median/standard deviation</p>
+<p>因为map是引入计数”1”，所以上述map到reduce，可以进行一次combine(不同于上述例子，此处combine与reducer代码逻辑不同)</p>
+<h2 id="inverted-index"><a href="#inverted-index" class="headerlink" title="inverted index"></a>inverted index</h2><p>倒排索引模式通常被作为MapReduce分析的一个例子。从数据集生成一个索引，以允许更快地搜索或丰富数据。在关键字上索引大型数据集通常很方便，这样搜索就可以将术语追溯到包含特定值的记录。</p>
+<p>搜索引擎建立索引来提高搜索性能。想象一下，输入一个关键词，让引擎爬行互联网，建立一个页面列表返回给你。这样的查询将花费非常长的时间来完成。通过建立一个Inverted Index，搜索引擎就会提前知道所有与关键字相关的网页，这些结果就会简单地显示给用户。这些索引通常被存储到数据库中，以进行快速查询响应。构建倒排索引是MapReduce的一个相当直接的应用程序，因为MapReduce框架可以处理其中的大部分工作。</p>
+<p>以下为Inverted Index在mapreduce各个部分的工作描述：</p>
+<p><strong>•</strong> mapper将索引所需的字段作为键输出，将unique identifier作为值输出。 </p>
+<p><strong>•</strong> 如果只使用<em>identity reducer</em>，则可以忽略combiner，因为在这种情况下，combiner只会创建不必要的处理。在输出到文件系统之前，将与group关联的value连接(concatenate)起来。在这种情况下，可以使用combiner。(<font color=red>TODO: 需要根据实际情况理解</font>)</p>
+<p><strong>•</strong> partitioner负责确定具有相同键的value最终将被reducer 复制到何处以用于最终输出。如果中间键分布不均匀，可以对其进行<strong>定制</strong>(customized)以实现更有效的负载平衡( load balancing)。</p>
+<p><strong>•</strong> reducer 将接收一组唯一的记录标识符映射到相应的key。标识符可以由一些唯一的分隔符连接，导致每组输出一个键/值对，或者每个输入值都可以用输入键写入，称为identity reducer。</p>
+<p>Inverted Index是一个较为复杂的应用，需要考虑较多因素</p>
+<ol>
+<li>map端：解析内容的计算成本、索引键的基数以及每个键的内容标识符数量都会对map的性能产生影响</li>
+<li>reduce端：由于文本的高频词的存在，例如: the这个单词出现的频率很高，reducer会花费大量时间处理这种<strong>数据倾斜</strong>的问题。</li>
+</ol>
+<h3 id="Inverted-Index-Example-–Wikipedia-reference-inverted-index"><a href="#Inverted-Index-Example-–Wikipedia-reference-inverted-index" class="headerlink" title="Inverted Index Example –Wikipedia reference inverted index"></a>Inverted Index Example –Wikipedia reference inverted index</h3><h2 id="Counting-with-Counters"><a href="#Counting-with-Counters" class="headerlink" title="Counting with Counters"></a>Counting with Counters</h2><p>Counting with Counters模式利用MapReduce框架的counter实用程序在map端计算全局和，而不产生任何输出。而且不需要使用key-value对。</p>
+<h4 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h4><ol>
+<li>Miner D, Shook A. MapReduce design patterns: building effective algorithms and analytics for Hadoop and other systems[M]. “ O’Reilly Media, Inc.”, 2012.</li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95">https://zh.wikipedia.org/wiki/%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95</a></li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#numerical-summarizations"><span class="toc-number">1.</span> <span class="toc-text">numerical summarizations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Minimum-maximum-and-count-example"><span class="toc-number">1.1.</span> <span class="toc-text">Minimum, maximum, and count example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Average-example"><span class="toc-number">1.2.</span> <span class="toc-text">Average example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Median-and-standard-deviation"><span class="toc-number">1.3.</span> <span class="toc-text">Median and standard deviation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#inverted-index"><span class="toc-number">2.</span> <span class="toc-text">inverted index</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Inverted-Index-Example-%E2%80%93Wikipedia-reference-inverted-index"><span class="toc-number">2.1.</span> <span class="toc-text">Inverted Index Example –Wikipedia reference inverted index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Counting-with-Counters"><span class="toc-number">3.</span> <span class="toc-text">Counting with Counters</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#reference"><span class="toc-number">3.0.1.</span> <span class="toc-text">reference</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&text=MapReduce Design Patterns(applications)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&is_video=false&description=MapReduce Design Patterns(applications)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=MapReduce Design Patterns(applications)&body=Check out this article: http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&title=MapReduce Design Patterns(applications)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&name=MapReduce Design Patterns(applications)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/16/MapReduce-Design-Patterns-applications/&t=MapReduce Design Patterns(applications)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
