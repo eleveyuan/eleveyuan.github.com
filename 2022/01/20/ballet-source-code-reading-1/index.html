@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="ballet框架涉及到的python库: built-in:  json 解析json pathlib 使用面向对象的方式操作文件 tempfile 建立临时文件 atexit 用于程序退出的回调，unix内就有的涉及 setuptools 打包分发工具 pkg_resources shutil 模块提供了一系列对文件和文件集合的高阶操作。 特别是提供了一些支持文件拷贝和删除的函数。 typing">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ballet source code reading(1)">
+<meta property="og:url" content="http://example.com/2022/01/20/ballet-source-code-reading-1/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="ballet框架涉及到的python库: built-in:  json 解析json pathlib 使用面向对象的方式操作文件 tempfile 建立临时文件 atexit 用于程序退出的回调，unix内就有的涉及 setuptools 打包分发工具 pkg_resources shutil 模块提供了一系列对文件和文件集合的高阶操作。 特别是提供了一些支持文件拷贝和删除的函数。 typing">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-20T12:12:35.000Z">
+<meta property="article:modified_time" content="2022-01-20T12:16:13.534Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="ballet框架">
+<meta property="article:tag" content="源码阅读">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ballet source code reading(1)</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/19/Enabling-Collaborative-Data-Science-Development-with-the-Ballet-Framework/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/20/ballet-source-code-reading-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&text=ballet source code reading(1)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&is_video=false&description=ballet source code reading(1)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(1)&body=Check out this article: http://example.com/2022/01/20/ballet-source-code-reading-1/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&name=ballet source code reading(1)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/20/ballet-source-code-reading-1/&t=ballet source code reading(1)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        ballet source code reading(1)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-20T12:12:35.000Z" itemprop="datePublished">2022-01-20</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/ballet%E6%A1%86%E6%9E%B6/" rel="tag">ballet框架</a>, <a class="tag-link-link" href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" rel="tag">源码阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>ballet框架涉及到的python库:</p>
+<p><strong>built-in</strong>:</p>
+<ol>
+<li><font color=blue>json</font> 解析json</li>
+<li><font color=blue>pathlib</font> 使用面向对象的方式操作文件</li>
+<li><font color=blue>tempfile</font> 建立临时文件</li>
+<li><font color=blue>atexit</font> 用于程序退出的回调，unix内就有的涉及</li>
+<li><font color=blue>setuptools</font> 打包分发工具</li>
+<li><font color=blue>pkg_resources</font></li>
+<li><font color=blue>shuti</font>l 模块提供了一系列对文件和文件集合的高阶操作。 特别是提供了一些支持文件拷贝和删除的函数。</li>
+<li><font color=blue>typing</font> Python 运行时并不强制标注函数和变量类型。 类型标注可被用于第三方工具，比如类型检查器、集成开发环境、静态检查器</li>
+<li><font color=blue>types</font> 该模块定义了实用函数以帮助动态创建新类型。</li>
+<li><font color=blue>unittest</font> 单元测试框架是受到 JUnit 的启发，与其他语言中的主流单元测试框架有着相似的风格。其支持测试自动化，配置共享和关机代码测试。支持将测试样例聚合到测试集中，并将测试与报告框架独立。</li>
+<li><font color=blue>textwrap</font> 处理字符串</li>
+<li><font color=blue>copy</font> 对象拷贝 </li>
+<li><font color=blue>shlex</font> 可用于编写类似 Unix shell 的简单词法分析程序</li>
+<li><font color=blue>subprocess</font> 模块允许你生成新的进程，连接它们的输入、输出、错误管道，并且获取它们的返回码</li>
+<li><font color=blue>logging</font> 此模块定义了实现用于应用程序和库的灵活事件日志记录系统的函数和类。</li>
+<li><font color=blue>warnings</font> 处理警告信息</li>
+<li><font color=blue>traceback</font> 打印或检索堆栈回溯</li>
+<li><font color=blue>pkgutil</font> 该模块为导入系统提供了工具，尤其是在包支持方面。</li>
+<li><font color=blue>importlib</font> 第一个目的是在 Python 源代码中提供 import 语句的实现，提供了一个可移植到任何 Python 解释器的 <code>import</code> 实现。第二个目的是实现 import 的部分被公开在这个包中，使得用户更容易创建他们自己的自定义对象 (通常被称为 importer) 来参与到导入过程中。</li>
+<li><font color=blue>inspect</font> 模块主要提供了四种用处：1.对是否是模块、框架、函数进行类型检查2.获取源码3.获取类或者函数的参数信息4. 解析堆栈</li>
+<li><font color=blue>contextlib</font> 上下文管理器，例如with中需要实现enter和exit两个魔术方法，通过这个包可以加上yeild关键字快速实现</li>
+<li><font color=blue>ast</font> 实现抽象语法树功能，如果熟悉antlr4应该就了解这个了</li>
+<li><font color=blue>pickle</font> 对象序列化</li>
+<li><font color=blue>abc</font> 抽象基类</li>
+<li><font color=blue>numbers</font> 定义数字抽象基类的层次结构</li>
+<li><font color=blue>dataclasses</font> 提供了一个装饰器和一些函数，用于自动添加生成的魔术方法</li>
+</ol>
+<p><strong>requirements</strong>: </p>
+<ol>
+<li><p><font color=orange>invoke</font>: 任务自动化工具</p>
+</li>
+<li><p><font color=orange>stacklog</font>: 一个堆叠日志消息库</p>
+</li>
+<li><p><font color=orange>GitPython</font>: GitPython是一个与Git库交互的Python库，包括底层命令（Plumbing）与高层命令（Porcelain）。 它可以实现绝大部分的Git读写操作，避免了频繁与Shell交互的畸形代码。</p>
+</li>
+<li><p><font color=orange>PyGithub</font>: 是一个使用 Github API v3 的 Python 库。</p>
+</li>
+<li><p><font color=orange>pytest</font>: 是一个框架，使构建简单且可扩展的测试容易。</p>
+</li>
+<li><p><font color=orange>responses</font>: 主要用于Web Service mocking。与之相反的库(requests)</p>
+</li>
+<li><p><font color=orange>funcy</font>: 一系列fancy functional工具专注于实用性</p>
+</li>
+<li><p><font color=orange>Click</font>: Click 是一个利用很少的代码以可组合的方式创造优雅命令行工具接口的 Python 库</p>
+</li>
+<li><p><font color=orange>scikit-learn</font>: 机器学习包</p>
+</li>
+<li><p><font color=orange>sklearn-pandas</font>: scikit-learn与pandas数据风格转换包</p>
+</li>
+<li><p><font color=orange>skits</font>: sklearn风格的时序数据预测训练模型</p>
+</li>
+<li><p><font color=orange>tsfresh</font>: 基于可扩展假设检验的时间序列特征提取</p>
+</li>
+<li><p><font color=orange>category-encoders</font>: 一系列sklearn风格的编码函数</p>
+</li>
+<li><p><font color=orange>feature-engine</font>: sklearn风格的一系列特征工程transformer</p>
+</li>
+<li><p><font color=orange>featuretools</font>: 一个自动特征工程的python库</p>
+</li>
+<li><p><font color=orange>scipy/pandas/numpy</font> 三剑客</p>
+</li>
+<li><p><font color=orange>tqdm</font>: 进度条</p>
+</li>
+<li><p><font color=orange>Sphinx</font>: 用于项目文档生成</p>
+</li>
+<li><p><font color=orange>python-slugify</font>: Python slug 化库，可以把 unicode 转化为 ASCII</p>
+</li>
+<li><p><font color=orange>dynaconf</font>: 管理配置文件</p>
+</li>
+<li><p><font color=orange>cookiecutter</font>: 命令行实用工具，这是一个项目生成器，也可称为引擎，因为它只完成了最核心的功能。</p>
+</li>
+<li><p><font color=orange>packaging</font>: 可重复使用的核心实用程序，适用于各种Python封装互操作性规格。</p>
+</li>
+<li><p><font color=orange>black</font>: 通过命令行格式化python代码</p>
+</li>
+<li><p><font color=orange>h5py</font>: 使用h5py库读写超过内存的大数据 。在简单数据的读操作中，我们通常一次性把数据全部读入到内存中。读写超过内存的大数据时，有别于简单数据的读写操作，受限于内存大小，通常需要指定位置、指定区域读写操作，避免无关数据的读写。</p>
+</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/20/ballet-source-code-reading-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&text=ballet source code reading(1)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&is_video=false&description=ballet source code reading(1)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(1)&body=Check out this article: http://example.com/2022/01/20/ballet-source-code-reading-1/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&title=ballet source code reading(1)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/20/ballet-source-code-reading-1/&name=ballet source code reading(1)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/20/ballet-source-code-reading-1/&t=ballet source code reading(1)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
