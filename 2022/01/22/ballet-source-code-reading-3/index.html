@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="整个ballet框架，只向外公开两个接口  from ballet.client import b from ballet.feature import Feature  eng库eng.external主要导入一些用于做特征处理的成熟python库 category_encoders: 一系列sklearn风格的编码函数feature-engine: sklearn风格的一系列特征工程trans">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ballet source code reading(3)">
+<meta property="og:url" content="http://example.com/2022/01/22/ballet-source-code-reading-3/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="整个ballet框架，只向外公开两个接口  from ballet.client import b from ballet.feature import Feature  eng库eng.external主要导入一些用于做特征处理的成熟python库 category_encoders: 一系列sklearn风格的编码函数feature-engine: sklearn风格的一系列特征工程trans">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/ballet-feat-eng.png">
+<meta property="article:published_time" content="2022-01-22T12:28:04.000Z">
+<meta property="article:modified_time" content="2022-01-28T15:07:14.396Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="ballet框架">
+<meta property="article:tag" content="源码阅读">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ballet-feat-eng.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ballet source code reading(3)</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2022/01/24/ballet-source-code-reading-4/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/21/ballet-source-code-reading-2/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/22/ballet-source-code-reading-3/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&text=ballet source code reading(3)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&is_video=false&description=ballet source code reading(3)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(3)&body=Check out this article: http://example.com/2022/01/22/ballet-source-code-reading-3/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&name=ballet source code reading(3)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/22/ballet-source-code-reading-3/&t=ballet source code reading(3)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#eng%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">eng库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#validation%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">validation库</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        ballet source code reading(3)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-22T12:28:04.000Z" itemprop="datePublished">2022-01-22</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/ballet%E6%A1%86%E6%9E%B6/" rel="tag">ballet框架</a>, <a class="tag-link-link" href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" rel="tag">源码阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>整个ballet框架，只向外公开两个接口</p>
+<ol>
+<li>from ballet.client import b</li>
+<li>from ballet.feature import Feature</li>
+</ol>
+<h2 id="eng库"><a href="#eng库" class="headerlink" title="eng库"></a>eng库</h2><p><strong>eng.external</strong>主要导入一些用于做特征处理的成熟python库</p>
+<p><a target="_blank" rel="noopener" href="https://contrib.scikit-learn.org/category_encoders/">category_encoders</a>: 一系列sklearn风格的编码函数<br><a target="_blank" rel="noopener" href="https://feature-engine.readthedocs.io/en/1.2.x/">feature-engine</a>: sklearn风格的一系列特征工程transformer，包括encoder，discretiser(分箱)，Imputer(通过参数估计处理缺失值)，outliers(异常值处理)，transformation(数据变换)<br><a target="_blank" rel="noopener" href="https://featuretools.alteryx.com/en/stable/">featuretools</a>: 一个自动特征工程的python库<br><a target="_blank" rel="noopener" href="https://github.com/EthanRosenthal/skits">skits</a>: sklearn风格的时序数据预测训练模型<br><a target="_blank" rel="noopener" href="https://tsfresh.readthedocs.io/en/latest/">tsfresh</a>: 基于可扩展假设检验的时间序列特征提取, FeatureAugmenter (计算并添加从给定时间序列计算的许多特征到数据中)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mixin class主要是为了实现了某种功能单元的类，用于被其他子类继承，将功能组合到子类中</span><br><span class="line">Mixin 实现的功能需要是通用的，并且是单一的，比如上例中两个 Mixin 类都适用于大部分子类，每个 Mixin 只实现一种功能，可按需继承。</span><br><span class="line">Mixin 只用于拓展子类的功能，不能影响子类的主要功能，子类也不能依赖 Mixin。比如上例中 Person 继承不同的 Mixin 只是增加了一些功能，并不影响自身的主要功能。如果是依赖关系，则是真正的基类，不应该用 Mixin 命名。</span><br><span class="line">Mixin 类自身不能进行实例化，仅用于被子类继承。</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">isinstance</span>(A, <span class="built_in">type</span>)</span><br><span class="line"><span class="comment"># 检测A是不是类</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>base.py</strong></p>
+<p>主要定义了一系列基础transform类</p>
+<ol>
+<li>NoFitMixin，一个mixin class,提供fit接口</li>
+<li>BaseTransformer，一个pass类，继承sklearn的TransformerMixin, BaseEstimator两个类，进行参数的设置以及获取，以及fit_transform</li>
+<li>SimpleFunctionTransformer继承sklearn的FunctionTransformer类，主要是可以传入function进行transform数据</li>
+<li>GroupedFunctionTransformer继承sklearn的FunctionTransformer类，进行分组transform，重写了父类transform方法</li>
+<li>GroupwiseTransformer继承BaseTransformer，不同分组进行不同的transform</li>
+<li>ConditionalTransformer继承BaseTransformer，可以根据条件获取数据进行transform</li>
+<li>SubsetTransformer继承sklearn-pandas的DataFrameMapper，对列子集进行transform</li>
+</ol>
+<p><strong>misc.py</strong></p>
+<p>在base.py定义的transfrom类基础上进行具体的transform</p>
+<ol>
+<li>IdentityTransformer 咋样进来咋样出去(identity transform)</li>
+<li>BoxCoxTransformer使用scipy的boxcox1p进行boxcox transform</li>
+<li>ValueReplacer简单的替换指定值</li>
+<li>NamedFramer Convert object to named 1d DataFrame</li>
+<li>NullTransformer啥也没做</li>
+<li>ComputedValueTransformer通过函数进行有监督或者无监督的输出新特征</li>
+<li>ColumnSelector挑选指定列</li>
+</ol>
+<p><strong>missing.py</strong></p>
+<p>处理缺失值</p>
+<ol>
+<li>LagImputer 分组使用[fillna() 参数ffill]将最后一个有效观察向前传播到下一个</li>
+<li>NullFiller 使用指定值填充</li>
+<li>NullIndicator 空值指示器</li>
+</ol>
+<p><strong>ts.py</strong></p>
+<p>处理时间序列数据</p>
+<ol>
+<li>SingleLagger类分组进行lag/shift数据</li>
+<li><font color=blue>def make_multi_lagger(<pre><code>lags: Iterable[int], groupby_kwargs: dict = None
+</code></pre>
+) -&gt; FeatureUnion</font>构建多lag数据</li>
+</ol>
+<p><img src="/images/ballet-feat-eng.png"></p>
+<h2 id="validation库"><a href="#validation库" class="headerlink" title="validation库"></a>validation库</h2><p>此库用于验证提交特征是否可以接受，进行验证</p>
+<p><strong>base.py</strong></p>
+<p>主要继承abc.ABCMeta元类</p>
+<ol>
+<li>BaseValidator抽象验证基类提供一个待实现的接口validate</li>
+<li>BaseCheck抽象检查基类提供待实现的接口check</li>
+<li>FeaturePerformanceEvaluator基础的特征性能验证类，用于验证candidate_feature</li>
+<li>FeatureAcceptanceMixin特征接受mixin类提供judge功能</li>
+<li>FeaturePruningMixin特征剪枝minxin类提供prune功能</li>
+<li>FeatureAccepter基础FeatureAcceptanceMixin, FeaturePerformanceEvaluator的实现类</li>
+<li>FeaturePruner基础FeaturePruningMixin, FeaturePerformanceEvaluator的实现类</li>
+</ol>
+<p><strong>common.py</strong></p>
+<p><font color=#00CC00>class NewFeatureInfo(NamedTuple)</font><br>新特征的信息：模块名，模块路径，导入函数</p>
+<p><font color=#00CC00>class CollectedChanges(NamedTuple)</font><br>收集diff信息</p>
+<p><font color=red>class ChangeCollector</font><br>用于收集diff信息，进行<font color=#00CC00>class CollectedChanges(NamedTuple)</font>封装</p>
+<p><font color=#00CC00>class RandomFeaturePerformanceEvaluator(FeaturePerformanceEvaluator)</font><br>随机特征性能评估</p>
+<p><font color=blue>def get_proposed_feature(project: Project)</font><br>根据项目，只收集一个特征(使用contrib.py的_collect_contrib_feature_from_module函数)</p>
+<p><font color=blue>def get_accepted_features(<br>    features: Collection[Feature],<br>    proposed_feature: Feature<br>) -&gt; List[Feature]</font></p>
+<p><em>还不太理解</em></p>
+<p><font color=blue>def _log_collect_items(name: str, items: Sized)</font><br>对收集的items(Sized具有__len__()的抽象类)进行log，并返回items</p>
+<p><font color=blue>def detect_differ(repo)</font><br>检测仓库是否存在diff</p>
+<p><font color=blue>def subsample_data_for_validation(*args)</font><br>下采样数据，具体只是返回参数</p>
+<p><font color=blue>def get_subclasses(cls)</font><br>获取类的子类</p>
+<p><font color=red>def check_from_class(check_class: type, obj, *checker_args, **checker_kwargs)</font><br>对类进行check(需要用到validation/base.py中的BaseCheck类)</p>
+<p><font color=blue>def load_spec(spec: Union[str, dict]) -&gt; Tuple[type, dict]</font><br>通过spec(类似pandas.DataFrame格式)，加载类以及参数</p>
+<p><strong>entropy.py</strong></p>
+<p>主要对基于KSG estimator估计互信息</p>
+<p><font color=blue>def _make_neighbors(**kwargs)</font><br>返回一个kNN邻居搜索器</p>
+<p><font color=blue>def _compute_empirical_probability(<br>    x: np.ndarray<br>) -&gt; Tuple[np.ndarray, np.ndarray]</font><br>计算经验概率</p>
+<p><font color=blue>def _compute_volume_unit_ball(d: int, metric: str = NEIGHBORS_METRIC) -&gt; float</font><br>计算d维单位球的体积</p>
+<p><font color=blue>def _is_column_disc(col: np.ndarray) -&gt; bool</font><br>“启发式”判断所给列是否为离散的</p>
+<p><font color=blue>def _is_column_cont(col: np.ndarray) -&gt; bool</font><br>not _is_column_disc</p>
+<p><font color=blue>def _get_disc_columns(x: np.ndarray) -&gt; np.ndarray</font><br>获取离散列</p>
+<p><font color=blue>def _get_cont_columns(x: np.ndarray) -&gt; np.ndarray</font><br>获取连续列</p>
+<p><strong>gfssf.py</strong></p>
+<p><font color=blue>def _concat_datasets(<br>    feature_df_map: Dict[Feature, pd.DataFrame],<br>    n_samples: int = 0,<br>    omit: Optional[List[Feature]] = None<br>) -&gt; np.ndarray</font><br>联结数据</p>
+<p><font color=blue>def _compute_lmbdas(<br>    unnorm_lmbda_1: float,<br>    unnorm_lmbda_2: float,<br>    features_by_src: Dict[str, np.ndarray],<br>) -&gt; Tuple[float, float]</font><br>计算lmbda，即数据长度lambda，以及数据列数lambda</p>
+<p><font color=blue>def _compute_threshold(<br>    lmbda_1: float,<br>    lmbda_2: float,<br>    n_feature_cols: int,<br>    n_omitted_cols: int = 0<br>) -&gt; float</font><br>根据lambda计算域值</p>
+<p><font color=#00CC00>@dataclass<br>class GFSSFIterationInfo</font><br>GFSSF信息</p>
+<p><font color=#00CC00>class GFSSFPerformanceEvaluator(FeaturePerformanceEvaluator)</font><br>GFSSF性能评估器</p>
+<p><strong>main.py</strong></p>
+<p><font color=blue>@decorator<br>def validation_stage(call: Call, message: str)</font><br>validation_stage验证的起始阶段</p>
+<p><font color=blue>def _load_validator_class_params(<br>    project: Project, config_key: str<br>) -&gt; Callable</font><br>根据配置加载validator类</p>
+<p><font color=blue>def _load_validation_data(<br>    project: Project<br>) -&gt; Tuple[pd.DataFrame, Union[pd.DataFrame, pd.Series]]</font><br>根据Project提供的信息加载验证数据</p>
+<p><font color=blue>@validation_stage(‘checking project structure’)<br>def _check_project_structure(project: Project, force: bool = False)</font><br>检查项目结构中的validator</p>
+<p><font color=blue>@validation_stage(‘validating feature API’)<br>def _validate_feature_api(project: Project, force: bool = False)</font><br>验证”特征api”</p>
+<p><font color=blue>@validation_stage(‘evaluating feature performance’)<br>def _evaluate_feature_performance(project: Project, force: bool = False)</font><br>评估特征性能</p>
+<p><font color=blue>@validation_stage(‘pruning existing features’)<br>def _prune_existing_features(<br>    project: Project, force: bool = False<br>) -&gt; List[Feature]</font><br>对存在的特征进行剪枝</p>
+<p><font color=blue>def validate(project: Project,<br>             check_project_structure: bool,<br>             check_feature_api: bool,<br>             evaluate_feature_acceptance: bool,<br>             evaluate_feature_pruning: bool)</font><br>根据传递的bool值，调用以上的函数进行一一验证</p>
+<p><strong>sfds.py</strong></p>
+<p>使用entropy.py的函数实现sfds算法</p>
+<p>**feature</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#eng%E5%BA%93"><span class="toc-number">1.</span> <span class="toc-text">eng库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#validation%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">validation库</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/22/ballet-source-code-reading-3/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&text=ballet source code reading(3)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&is_video=false&description=ballet source code reading(3)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(3)&body=Check out this article: http://example.com/2022/01/22/ballet-source-code-reading-3/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&title=ballet source code reading(3)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/22/ballet-source-code-reading-3/&name=ballet source code reading(3)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/22/ballet-source-code-reading-3/&t=ballet source code reading(3)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

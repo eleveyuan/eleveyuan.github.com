@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="ballet根目录相关： __init__.py 主要向外提供： 实例对象: b &#x3D; ballet.client() 特征类: ballet.feature.Feature cli.py 主要使用click构建command line interface @click.group()@click.version_option(version)@click.option(‘-v’, ‘–verbos">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ballet source code reading(4)">
+<meta property="og:url" content="http://example.com/2022/01/24/ballet-source-code-reading-4/index.html">
+<meta property="og:site_name" content="eleve yuan&#39;s BLOG">
+<meta property="og:description" content="ballet根目录相关： __init__.py 主要向外提供： 实例对象: b &#x3D; ballet.client() 特征类: ballet.feature.Feature cli.py 主要使用click构建command line interface @click.group()@click.version_option(version)@click.option(‘-v’, ‘–verbos">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/ballet-error.png">
+<meta property="article:published_time" content="2022-01-24T12:40:47.000Z">
+<meta property="article:modified_time" content="2022-01-27T11:37:29.628Z">
+<meta property="article:author" content="eleve">
+<meta property="article:tag" content="ballet框架">
+<meta property="article:tag" content="源码阅读">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/ballet-error.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>ballet source code reading(4)</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/01/22/ballet-source-code-reading-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/24/ballet-source-code-reading-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&text=ballet source code reading(4)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&is_video=false&description=ballet source code reading(4)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(4)&body=Check out this article: http://example.com/2022/01/24/ballet-source-code-reading-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&name=ballet source code reading(4)&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/24/ballet-source-code-reading-4/&t=ballet source code reading(4)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        ballet source code reading(4)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">eleve</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-24T12:40:47.000Z" itemprop="datePublished">2022-01-24</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/ballet%E6%A1%86%E6%9E%B6/" rel="tag">ballet框架</a>, <a class="tag-link-link" href="/tags/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/" rel="tag">源码阅读</a>
+    </div>
+
+
+      
+      <span id="busuanzi_container_page_pv">
+        阅读: <span id="busuanzi_value_page_pv"></span>次
+      </span>
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>ballet根目录相关：</p>
+<p><strong>__init__.py</strong></p>
+<p>主要向外提供：</p>
+<p>实例对象: b = ballet.client()</p>
+<p>特征类: ballet.feature.Feature</p>
+<p><strong>cli.py</strong></p>
+<p>主要使用click构建command line interface</p>
+<p><font color=blue>@click.group()<br>@click.version_option(version)<br>@click.option(‘-v’, ‘–verbose’,<br>              count=True,<br>              help=’Increase verbosity’)<br>@click.option(‘-q’, ‘–quiet’,<br>              count=True,<br>              help=’Decrease verbosity’<br>              )<br>def cli(verbose, quiet):</font><br>使用group()进行命令附加，主要根据不同日志级别，开启日志记录</p>
+<p><font color=blue>@cli.command()<br>@click.option(‘–create-github-repo’,<br>              is_flag=True,<br>              default=False,<br>              help=’Create repo on GitHub for resulting project’)<br>@click.option(‘–github-token’,<br>              envvar=’GITHUB_TOKEN’,<br>              default=None,<br>              help=’github personal access token’)<br>@stacklog(click.echo, ‘Generating new ballet project’)<br>def quickstart(create_github_repo, github_token)</font><br>附加到cli命令， 通过ballet.templating渲染项目模板，也即开启一个本地项目</p>
+<p><font color=blue>@cli.command(‘update-project-template’)<br>@click.option(‘–push/–no-push’, ‘-p’,<br>              default=False,<br>              help=’Push updates to remote on success’)<br>@click.option(‘–path’, ‘project_template_path’,<br>              default=None,<br>              help=’Specify override for project template path ‘<br>                   ‘(i.e. gh:ballet/ballet)’)<br>@stacklog(click.echo, ‘Updating project template’)<br>def update_project_template(push, project_template_path)</font><br>附加到cli命令， 通过ballet.update更新项目模板</p>
+<p><font color=blue>@cli.command(‘start-new-feature’)<br>@click.option(‘–branching/–no-branching’,<br>              default=True,<br>              help=’whether to create a new branch to work on the feature’)<br>@stacklog(click.echo, ‘Starting new feature’)<br>def start_new_feature(branching)</font><br>附加到cli命令， 通过ballet.templating新增分支</p>
+<p><font color=blue>@cli.command(‘validate’)<br>@click.option(‘–check-all’, ‘-A’,<br>              is_flag=True,<br>              default=False)<br>@click.option(‘–check-project-structure/–no-check-project-structure’,<br>              envvar=’BALLET_CHECK_PROJECT_STRUCTURE’,<br>              default=False)<br>@click.option(‘–check-feature-api/–no-check-feature-api’,<br>              envvar=’BALLET_CHECK_FEATURE_API’,<br>              default=False)<br>@click.option(‘–evaluate-feature-acceptance/–no-evaluate-feature-acceptance’,<br>              envvar=’BALLET_EVALUATE_FEATURE_ACCEPTANCE’,<br>              default=False)<br>@click.option(‘–evaluate-feature-pruning/–no-evaluate-feature-pruning’,<br>              envvar=’BALLET_EVALUATE_FEATURE_PRUNING’,<br>              default=False)<br>@stacklog(click.echo, ‘Validating project’)<br>def validate(check_all, check_project_structure, check_feature_api,<br>             evaluate_feature_acceptance, evaluate_feature_pruning)</font><br>附加到cli命令，对candidate branch进行验证</p>
+<p><strong>client.py</strong></p>
+<p>提供collaborator使用的client</p>
+<p><font color=blue>class Client</font></p>
+<p><strong>compat.py</strong></p>
+<p>主要用于依赖的python库的兼容问题</p>
+<p><strong>contrib.py</strong></p>
+<p>按照有project到package到module进行collect贡献的特征。并只向外提供collect_contrib_features函数接口</p>
+<p><strong>discovery.py</strong></p>
+<p><font color=blue>def countunique(z: np.ndarray, axis=0)</font><br>统计unique数据个数(np.apply_along_axis对给定轴进行一维切片)</p>
+<p><font color=blue>@fy.memoize(key_func=lambda feature, values, y, expensive_stats: (id(feature), expensive_stats))  # noqa<br>def _summarize_feature(<br>    feature: ‘ballet.feature.Feature’,<br>    values: Optional[Dict[‘ballet.feature.Feature’, Optional[np.ndarray]]],<br>    y: Optional[np.ndarray],<br>    expensive_stats: bool,<br>) -&gt; dict</font><br>对特征Feature进行summarize，<strong>主要依赖ballet.validation.entropy， ballet.transformer计算的信息以及一些Feature自带属性信息，以及常规统计值信息。</strong><br>其中fy.memoize为funcy库的装饰器，此装饰器书写的某个函数接受输入，然后经过一段耗时不菲的计算过程输出结果，但在函数实际调用过程中经常遇到重复的传入参数。这种时候你肯定希望自己的函数可以“记忆”下执行过的参数与输出结果，省得大量重复计算，而funcy中的memoize装饰器就可以帮助我们快速改造自己的函数</p>
+<p><font color=blue>@dont_log_nonnegative()<br>def discover(<br>    features: List[‘ballet.feature.Feature’],<br>    X_df: Optional[pd.DataFrame],<br>    y_df: Optional[pd.DataFrame],<br>    y: Optional[np.ndarray],<br>    input: Optional[str] = None,<br>    primitive: Optional[str] = None,<br>    expensive_stats: bool = False,<br>) -&gt; pd.DataFrame</font><br>发现存在的特征</p>
+<p>@dont_log_nonnegative()装饰器过滤非负警告</p>
+<p><strong>encoder.py</strong></p>
+<p><font color=blue>class EncoderPipeline(TransformerPipeline)</font><br>继承sklearn_pandas.pipeline.TransformerPipeline类，进行简单直接调用</p>
+<p><font color=blue>def make_encoder_pipeline(steps, **kwargs)</font><br>同sklearn_pandas.pipeline.TransformerPipeline中make_transformer_pipeline()的写法</p>
+<p><font color=blue>def make_robust_encoder(<br>    steps: OneOrMore[TransformerLike],<br>    **kwargs,<br>)</font><br>确保写入的是Transformer，在组成pipeline</p>
+<p><strong>exc.py</strong></p>
+<p>主要定义一系列exception类</p>
+<p><img src="/images/ballet-error.png"></p>
+<p><strong>feature.py</strong></p>
+<p>feature definition，Feature是ballet框架的核心类用于特征定义。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">从概念上讲，feature definition是一种学习函数，它将一个数据实例中的原始变量映射到特征值向量。feature definition可以为每个实例生成一个标量特征值，也可以生成一个特征值向量，如 PCA 等嵌入技术或分类变量的 one-hot 编码的情况。</span><br></pre></td></tr></table></figure>
+
+<p><font color=blue>class Feature</font></p>
+<ol>
+<li>构建transformer输入</li>
+<li>构建pipeline输入</li>
+<li>调用pipeline进行fit/transform</li>
+</ol>
+<p><strong>pipeline.py</strong></p>
+<p><font color=#00CC00>class FeatureEngineeringPipeline(DataFrameMapper)</font><br>将输入的特征转化为sklearn_pandas.DataFrameMapper使用的特征，然后进行map处理</p>
+<p><font color=#00CC00>class EngineerFeaturesResult(NamedTuple)</font><br>类似c++中的struct，作为一种存储结构，用于存储pipeline，features，数据，transformer的关系</p>
+<p><font color=blue>def make_engineer_features(<br>    pipeline: FeatureEngineeringPipeline,<br>    encoder: BaseTransformer,<br>    load_data: Callable[…, Tuple[pd.DataFrame, pd.DataFrame]],<br>) -&gt; Callable[[pd.DataFrame, pd.DataFrame], EngineerFeaturesResult]</font><br>组装EngineerFeaturesResult</p>
+<p><strong>project.py</strong></p>
+<p><font color=blue>def load_config(path: Optional[Pathy] = None, ascend: bool = True) -&gt; Dynaconf</font><br><font color=blue>def load_config_at_path(path: Pathy) -&gt; Dynaconf</font><br><font color=blue>def load_config_in_dir(path: Pathy) -&gt; Dynaconf</font><br>用于读取config</p>
+<p><font color=blue>def relative_to_contrib(<br>    diff: git.diff.Diff, project: ‘Project’<br>) -&gt; pathlib.Path</font><br>获取修改的文件与contrib.module_path的相对路径</p>
+<p><font color=blue>def make_feature_path(<br>    contrib_dir: Pathy, username: str, featurename: str<br>) -&gt; pathlib.Path</font><br>获取特征文件路径</p>
+<p><font color=blue>def detect_github_username(project: ‘Project’) -&gt; str</font><br>检测github仓库的用户是否存在</p>
+<p><font color=#00CC00>class Project</font><br>一系列property函数返回所需要的对象(config/git.Repo/Path)获取对象的信息</p>
+<p>类方法:<br><font color=blue>@classmethod<br>    def from_path(cls, path: Pathy, ascend: bool = False)</font><br><font color=blue>   @classmethod<br>    def from_cwd(cls)</font><br>从路径或者当前位置路径开始，根据config进行创建project实例，遇到配置文件错误，递归文件进行创建</p>
+<p><strong>templating</strong></p>
+<p><font color=blue>def _stringify_path(obj) -&gt; str</font><br>字符化(序列化)对象</p>
+<p><font color=blue>@fy.wraps(_cookiecutter)<br>def cookiecutter(*args, **kwargs) -&gt; str</font><br>对参数进行str化，然后进行_cookiecutter操作(cookiecutter库是通过项目模板创建项目的命令行工具)</p>
+<p><font color=blue>def render_project_template(<br>    project_template_path: Optional[Pathy] = None,<br>    create_github_repo: bool = False,<br>    github_token: Optional[str] = None,<br>    **cc_kwargs<br>) -&gt; str</font><br>根据项目模板生成ballet项目</p>
+<p><font color=blue>def render_feature_template(**cc_kwargs) -&gt; str</font><br>生成特征模板</p>
+<p><font color=blue>def _fail_if_feature_exists(dst: pathlib.Path) -&gt; None</font><br>判断文件是否存在</p>
+<p><font color=blue>def start_new_feature(<br>    contrib_dir: Pathy = None,<br>    branching: bool = True,<br>    **cc_kwargs<br>) -&gt; List[Tuple[pathlib.Path, str]]</font><br><font color=blue>def _log_start_new_feature_success(result: List[Tuple[pathlib.Path, str]])</font><br><font color=blue>def _log_switch_to_new_branch(branch: Optional[str])</font><br>开始新的特征，先写入tempfile，默认存入新分支，然后写入contrib directory</p>
+<p><strong>transformer.py</strong></p>
+<p><font color=#00CC00>class ConversionApproach(NamedTuple)</font><br>类似c++中的struct，作为一种存储结构</p>
+<p><font color=#00CC00>class DelegatingRobustTransformer(DeepcopyMixin, BaseTransformer)</font><br>其核心成员方法：</p>
+<ol>
+<li><font color=blue>@quiet def _call_robust(self, method, X, y, kwargs)</font>  鲁棒性处理出，用于处理不同类型以及shape的数据</li>
+<li><font color=blue>def fit(self, X, y=None, **kwargs)</font></li>
+<li><font color=blue>def transform(self, X, y=None, **kwargs)</font></li>
+</ol>
+<p>一系列的log处理方法</p>
+<p><font color=orange>RobustTransformer = Union[TransformerPipeline, ‘DelegatingRobustTransformer’]</font><br>对外使用的Transformer</p>
+<p><font color=blue>def make_robust_transformer(<br>    transformer: OneOrMore[TransformerLike]<br>) -&gt; RobustTransformer</font><br><font color=blue>def make_transformer_pipeline(<br>    steps: Sequence[BaseTransformer],<br>) -&gt; TransformerPipeline</font><br><font color=blue>def _name_estimators(<br>    estimators: Sequence[BaseEstimator]<br>) -&gt; List[Tuple[str, BaseEstimator]]</font><br><font color=blue>def desugar_transformer(<br>    transformer: TransformerLike,<br>) -&gt; BaseTransformer</font><br>desugar_transformer用于将各种转换器转化了定义的转换器类</p>
+<p><font color=blue>def get_transformer_primitives(<br>    transformer: TransformerLike<br>) -&gt; List[str]</font><br>获取transformer/pipeline的源语(这里只是获得名字)</p>
+<p><strong>update.py</strong></p>
+<p><font color=blue>def _get_latest_project_version_string(project: str) -&gt; Optional[str]</font><br><font color=blue>@funcy.ignore(Exception)<br>def _get_latest_ballet_version_string() -&gt; Optional[str]</font><br><font color=blue>def _check_for_updated_ballet() -&gt; Optional[str]</font><br>检查ballet是否可以更新版本</p>
+<p><font color=blue>def _warn_of_updated_ballet(latest: Optional[str])</font><br>更新信息</p>
+<p><font color=blue>def _make_template_branch_merge_commit_message() -&gt; str</font><br>merge版本信息</p>
+<p><font color=blue>@funcy.silent<br>def _safe_delete_remote(repo: git.Repo, name: str)</font><br>删除remote仓库</p>
+<p><font color=blue>def _render_project_template(<br>    cwd: pathlib.Path,<br>    tempdir: Pathy,<br>    project_template_path: Optional[Pathy] = None<br>) -&gt; str</font><br>根据项目模板生成ballet项目</p>
+<p><font color=blue>def _get_full_context(cwd: pathlib.Path) -&gt; dict</font><br>加载/新增上下文配置</p>
+<p><font color=blue>def _log_recommended_reinstall()</font><br>logger信息</p>
+<p><font color=red>def update_project_template(push: bool = False,<br>                            project_template_path: Optional[Pathy] = None)</font><br>更新项目模板</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">archives</a></li>
+         
+          <li><a href="/tags/">Tag</a></li>
+         
+          <li><a href="/categories/">Category</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/24/ballet-source-code-reading-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&text=ballet source code reading(4)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&is_video=false&description=ballet source code reading(4)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=ballet source code reading(4)&body=Check out this article: http://example.com/2022/01/24/ballet-source-code-reading-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&title=ballet source code reading(4)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/24/ballet-source-code-reading-4/&name=ballet source code reading(4)&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/24/ballet-source-code-reading-4/&t=ballet source code reading(4)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2020-2022
+    eleve
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">archives</a></li><!--
+     --><!--
+       --><li><a href="/tags/">Tag</a></li><!--
+     --><!--
+       --><li><a href="/categories/">Category</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
